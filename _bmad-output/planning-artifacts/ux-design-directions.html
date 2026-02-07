@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Race Team - Design Direction Showcase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Colors */
+            --bg-base: #0A0A0F;
+            --bg-surface: #141419;
+            --bg-elevated: #1E1E26;
+            --text-primary: #F4F4F5;
+            --text-secondary: #B4B4BB;
+            --text-muted: #71717A;
+            --border-default: #27272A;
+            --border-subtle: #1E1E26;
+            --accent-primary: #F59E0B;
+            --accent-hover: #D97706;
+            --trace-best: #22C55E;
+            --trace-average: #71717A;
+            --trace-regression: #EF4444;
+            --success: #22C55E;
+            --error: #EF4444;
+            --info: #3B82F6;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Inter', sans-serif;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        /* Navigation Header */
+        .nav-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-elevated);
+            border-bottom: 1px solid var(--border-default);
+            padding: 16px 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 8px 16px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-tab:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .nav-tab.active {
+            background: var(--accent-primary);
+            color: var(--bg-base);
+            border-color: var(--accent-primary);
+        }
+
+        /* Direction Container */
+        .direction-container {
+            margin-top: 80px;
+            min-height: calc(100vh - 80px);
+        }
+
+        .direction {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .direction.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Common Elements */
+        .stat-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-value.mono {
+            font-size: 28px;
+        }
+
+        .insight-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .insight-headline {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+
+        .corner-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            background: var(--error);
+            color: var(--text-primary);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 6px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .corner-tag:hover {
+            transform: scale(1.05);
+        }
+
+        .chat-input-container {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            gap: 12px;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-container:focus-within {
+            border-color: var(--accent-primary);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .chat-send-btn {
+            padding: 8px 16px;
+            background: var(--accent-primary);
+            color: var(--bg-base);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .chat-send-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* Direction 1: The Storyteller */
+        .storyteller {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+
+        .storyteller-hero {
+            margin-bottom: 48px;
+        }
+
+        .storyteller-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .storyteller-meta {
+            display: flex;
+            gap: 24px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .storyteller-delta {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .storyteller-section {
+            margin-bottom: 48px;
+        }
+
+        .storyteller-paragraph {
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .storyteller-highlight {
+            background: var(--bg-elevated);
+            border-left: 3px solid var(--accent-primary);
+            padding: 16px 24px;
+            margin: 32px 0;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        /* Direction 2: Command Center */
+        .command-center {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .command-sidebar {
+            width: 280px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-default);
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .sidebar-item:hover {
+            background: var(--bg-elevated);
+        }
+
+        .sidebar-item.active {
+            background: var(--accent-primary);
+            color: var(--bg-base);
+            font-weight: 600;
+        }
+
+        .command-main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .command-grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .command-split {
+            display: grid;
+            grid-template-rows: 60% 40%;
+            gap: 16px;
+            height: calc(100vh - 280px);
+        }
+
+        .command-coaching {
+            overflow-y: auto;
+            padding: 24px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+        }
+
+        /* Direction 3: Conversational Coach */
+        .conversational {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px;
+            height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .conv-summary {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .conv-summary-item {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .conv-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-bottom: 16px;
+        }
+
+        .conv-message {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 20px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .conv-message.ai {
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .conv-message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .conv-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--bg-base);
+        }
+
+        .conv-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .conv-embedded-chart {
+            margin-top: 16px;
+        }
+
+        /* Direction 4: Dashboard */
+        .dashboard {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-insight {
+            margin-bottom: 24px;
+        }
+
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Direction 5: Split Screen */
+        .split-screen {
+            display: grid;
+            grid-template-columns: 60% 40%;
+            height: calc(100vh - 80px);
+        }
+
+        .split-left {
+            padding: 24px;
+            overflow-y: auto;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-default);
+        }
+
+        .split-right {
+            padding: 24px;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+        }
+
+        .split-coaching-section {
+            margin-bottom: 32px;
+        }
+
+        .split-corner-ref {
+            display: inline-block;
+            padding: 2px 6px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .split-corner-ref:hover {
+            background: var(--accent-primary);
+            color: var(--bg-base);
+            border-color: var(--accent-primary);
+        }
+
+        .split-chat-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 40%;
+            padding: 16px 24px;
+            background: var(--bg-base);
+            border-top: 1px solid var(--border-default);
+        }
+
+        /* Direction 6: Focused Flow */
+        .focused-flow {
+            height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flow-tabs {
+            display: flex;
+            background: var(--bg-surface);
+            border-bottom: 2px solid var(--border-default);
+            padding: 0 24px;
+        }
+
+        .flow-tab {
+            padding: 16px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+
+        .flow-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .flow-tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        .flow-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .flow-panel {
+            display: none;
+            padding: 48px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .flow-panel.active {
+            display: block;
+        }
+
+        .flow-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .flow-hero-card {
+            background: var(--bg-elevated);
+            border: 2px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 32px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .flow-coaching-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .flow-coaching-section {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .flow-chat-area {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            height: calc(100vh - 200px);
+        }
+
+        /* Comparison View */
+        .comparison-view {
+            padding: 48px 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .comparison-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+
+        .comparison-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .comparison-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-4px);
+        }
+
+        .comparison-card h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--accent-primary);
+        }
+
+        .comparison-card h4 {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .comparison-pros {
+            margin-bottom: 16px;
+        }
+
+        .comparison-pros h5 {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .comparison-pros ul {
+            list-style: none;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .comparison-pros li {
+            padding-left: 16px;
+            position: relative;
+            margin-bottom: 4px;
+        }
+
+        .comparison-pros li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .comparison-thumbnail {
+            width: 100%;
+            height: 200px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .command-center {
+                flex-direction: column;
+            }
+            .command-sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-default);
+            }
+            .split-screen {
+                grid-template-columns: 1fr;
+            }
+            .split-right {
+                position: static;
+            }
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+                width: 100%;
+            }
+            .nav-tab {
+                width: 100%;
+            }
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <div class="nav-header">
+        <h1>AI Race Team - Design Direction Showcase</h1>
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-direction="1">1. The Storyteller</button>
+            <button class="nav-tab" data-direction="2">2. Command Center</button>
+            <button class="nav-tab" data-direction="3">3. Conversational Coach</button>
+            <button class="nav-tab" data-direction="4">4. The Dashboard</button>
+            <button class="nav-tab" data-direction="5">5. Split Screen</button>
+            <button class="nav-tab" data-direction="6">6. Focused Flow</button>
+            <button class="nav-tab" data-direction="compare">Compare All</button>
+        </div>
+    </div>
+
+    <!-- Direction Container -->
+    <div class="direction-container">
+        <!-- Direction 1: The Storyteller -->
+        <div class="direction active" data-direction="1">
+            <div class="storyteller">
+                <div class="storyteller-hero">
+                    <h1 class="storyteller-title">Lime Rock Park Session Debrief</h1>
+                    <div class="storyteller-meta">
+                        <span>Mazda MX-5 Cup</span>
+                        <span>•</span>
+                        <span>25 laps completed</span>
+                        <span>•</span>
+                        <span>Best: <span class="mono">57.832s</span></span>
+                    </div>
+                    <div class="storyteller-delta">↓ 0.4s improvement from previous session</div>
+                </div>
+
+                <div class="storyteller-section">
+                    <div class="storyteller-highlight">
+                        You're under-braking in 4 of 7 corners — your average brake pressure is 42%, but your fastest lap used 78%
+                    </div>
+
+                    <p class="storyteller-paragraph">
+                        Looking at your session data, there's a clear pattern emerging in your braking technique. While your racing line is solid and your throttle application is smooth, you're consistently leaving time on the table by not committing to the brakes hard enough at turn-in.
+                    </p>
+
+                    <p class="storyteller-paragraph">
+                        Let's break down what happened on your fastest lap versus your average lap. On lap 17, when you set your personal best, you applied 78% brake pressure at Turn 5 entry. Compare that to your average lap where you were only hitting 42% brake pressure at the same point.
+                    </p>
+                </div>
+
+                <div class="storyteller-section">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <div class="chart-title">Brake & Throttle Trace - Lap 17 vs Average</div>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--trace-best);"></div>
+                                    <span>Best Lap (57.832s)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--trace-average);"></div>
+                                    <span>Average</span>
+                                </div>
+                            </div>
+                        </div>
+                        <svg width="100%" height="300" viewBox="0 0 1000 300" preserveAspectRatio="none">
+                            <!-- Grid lines -->
+                            <line x1="0" y1="75" x2="1000" y2="75" stroke="var(--border-subtle)" stroke-width="1"/>
+                            <line x1="0" y1="150" x2="1000" y2="150" stroke="var(--border-default)" stroke-width="1"/>
+                            <line x1="0" y1="225" x2="1000" y2="225" stroke="var(--border-subtle)" stroke-width="1"/>
+
+                            <!-- Corner markers -->
+                            <line x1="140" y1="0" x2="140" y2="300" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="140" y="15" fill="var(--text-muted)" font-size="12" text-anchor="middle">T1</text>
+                            <line x1="280" y1="0" x2="280" y2="300" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="280" y="15" fill="var(--text-muted)" font-size="12" text-anchor="middle">T2</text>
+                            <line x1="420" y1="0" x2="420" y2="300" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="420" y="15" fill="var(--text-muted)" font-size="12" text-anchor="middle">T3</text>
+                            <line x1="560" y1="0" x2="560" y2="300" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="560" y="15" fill="var(--text-muted)" font-size="12" text-anchor="middle">T4</text>
+                            <line x1="700" y1="0" x2="700" y2="300" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="700" y="15" fill="var(--text-muted)" font-size="12" text-anchor="middle">T5</text>
+                            <line x1="840" y1="0" x2="840" y2="300" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="840" y="15" fill="var(--text-muted)" font-size="12" text-anchor="middle">T6</text>
+
+                            <!-- Average brake trace -->
+                            <path d="M0,150 L100,150 L140,110 L180,150 L250,150 L280,120 L320,150 L390,150 L420,100 L460,150 L530,150 L560,130 L600,150 L670,150 L700,110 L740,150 L810,150 L840,140 L880,150 L1000,150"
+                                  fill="none" stroke="var(--trace-average)" stroke-width="2" opacity="0.6"/>
+
+                            <!-- Best lap brake trace -->
+                            <path d="M0,150 L100,150 L140,80 L180,150 L250,150 L280,120 L320,150 L390,150 L420,70 L460,150 L530,150 L560,100 L600,150 L670,150 L700,75 L740,150 L810,150 L840,110 L880,150 L1000,150"
+                                  fill="none" stroke="var(--error)" stroke-width="3"/>
+
+                            <!-- Average throttle trace -->
+                            <path d="M0,250 L120,250 L160,220 L240,250 L260,220 L340,250 L400,220 L480,250 L540,220 L620,250 L680,220 L760,250 L820,220 L900,250 L1000,250"
+                                  fill="var(--trace-average)" opacity="0.15"/>
+
+                            <!-- Best throttle trace -->
+                            <path d="M0,250 L120,250 L160,190 L240,250 L260,190 L340,250 L400,190 L480,250 L540,190 L620,250 L680,180 L760,250 L820,190 L900,250 L1000,250"
+                                  fill="var(--success)" opacity="0.25"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="storyteller-section">
+                    <p class="storyteller-paragraph">
+                        The corners where you're losing the most time are <span class="corner-tag">T1</span> <span class="corner-tag">T3</span> <span class="corner-tag">T5</span> and <span class="corner-tag">T7</span>. These are all heavy braking zones where you need maximum deceleration before turn-in. The extra brake pressure isn't about braking later — it's about getting the car slowed down more efficiently so you can get back to throttle earlier.
+                    </p>
+
+                    <p class="storyteller-paragraph">
+                        On your fastest lap, you weren't just braking harder — you were also getting back to full throttle 0.3 seconds earlier at the apex of Turn 5. That's where the real time gain comes from. The harder initial brake application lets you complete your braking phase sooner and start accelerating while your competitors are still coasting.
+                    </p>
+
+                    <div class="insight-card" style="margin-top: 32px;">
+                        <h3 style="font-size: 16px; color: var(--accent-primary); margin-bottom: 12px;">Focus Next Session</h3>
+                        <p style="color: var(--text-secondary);">Work on increasing initial brake pressure at T5 and T7. Start with 10% more pressure at turn-in and maintain it deeper into the corner. Your best lap proves the car can handle it.</p>
+                    </div>
+                </div>
+
+                <div class="storyteller-section" style="margin-top: 48px;">
+                    <div class="chat-input-container">
+                        <input type="text" class="chat-input" placeholder="Ask a follow-up question about this session...">
+                        <button class="chat-send-btn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direction 2: Command Center -->
+        <div class="direction" data-direction="2">
+            <div class="command-center">
+                <div class="command-sidebar">
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Session</div>
+                        <div class="sidebar-item active">Lime Rock Park</div>
+                        <div class="sidebar-item">Previous: Watkins Glen</div>
+                        <div class="sidebar-item">Previous: Road Atlanta</div>
+                    </div>
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Corners</div>
+                        <div class="sidebar-item">Turn 1 <span style="float: right; color: var(--error);">-0.2s</span></div>
+                        <div class="sidebar-item">Turn 2 <span style="float: right; color: var(--text-muted);">+0.0s</span></div>
+                        <div class="sidebar-item">Turn 3 <span style="float: right; color: var(--error);">-0.1s</span></div>
+                        <div class="sidebar-item">Turn 4 <span style="float: right; color: var(--success);">+0.1s</span></div>
+                        <div class="sidebar-item">Turn 5 <span style="float: right; color: var(--error);">-0.3s</span></div>
+                        <div class="sidebar-item">Turn 6 <span style="float: right; color: var(--text-muted);">+0.0s</span></div>
+                        <div class="sidebar-item">Turn 7 <span style="float: right; color: var(--error);">-0.2s</span></div>
+                    </div>
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Quick Stats</div>
+                        <div class="stat-card">
+                            <div class="stat-label">Avg Brake %</div>
+                            <div class="stat-value mono">42%</div>
+                        </div>
+                        <div class="stat-card" style="margin-top: 8px;">
+                            <div class="stat-label">Best Brake %</div>
+                            <div class="stat-value mono">78%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="command-main">
+                    <div class="command-grid">
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+                            <div class="stat-card">
+                                <div class="stat-label">Best Lap</div>
+                                <div class="stat-value mono">57.832s</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Delta</div>
+                                <div class="stat-value" style="color: var(--success);">-0.4s</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Laps</div>
+                                <div class="stat-value">25</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Car</div>
+                                <div class="stat-value" style="font-size: 16px;">MX-5 Cup</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="command-split">
+                        <div class="command-coaching">
+                            <div class="insight-headline" style="margin-bottom: 24px;">
+                                You're under-braking in 4 of 7 corners — your average brake pressure is 42%, but your fastest lap used 78%
+                            </div>
+                            <p style="color: var(--text-secondary); margin-bottom: 16px; line-height: 1.8;">
+                                Looking at your session data, there's a clear pattern in your braking. The corners where you're losing time are <span class="corner-tag">T1</span> <span class="corner-tag">T3</span> <span class="corner-tag">T5</span> <span class="corner-tag">T7</span>.
+                            </p>
+                            <div style="background: var(--bg-elevated); border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+                                <div style="font-weight: 600; margin-bottom: 8px;">Turn 5 Analysis</div>
+                                <div style="font-size: 14px; color: var(--text-secondary);">
+                                    <div>Avg brake pressure: <span class="mono" style="color: var(--error);">42%</span></div>
+                                    <div>Best lap pressure: <span class="mono" style="color: var(--success);">78%</span></div>
+                                    <div>Time lost: <span class="mono" style="color: var(--error);">-0.3s</span></div>
+                                </div>
+                            </div>
+                            <div style="background: var(--accent-primary); color: var(--bg-base); border-radius: 6px; padding: 16px; font-weight: 600;">
+                                Focus Next Session: Work on increasing initial brake pressure at T5 and T7
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <div class="chart-title">Brake & Throttle Trace</div>
+                                <div class="chart-legend">
+                                    <div class="legend-item">
+                                        <div class="legend-dot" style="background: var(--error);"></div>
+                                        <span>Brake</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-dot" style="background: var(--success);"></div>
+                                        <span>Throttle</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <svg width="100%" height="280" viewBox="0 0 1000 280" preserveAspectRatio="none">
+                                <line x1="0" y1="70" x2="1000" y2="70" stroke="var(--border-subtle)" stroke-width="1"/>
+                                <line x1="0" y1="140" x2="1000" y2="140" stroke="var(--border-default)" stroke-width="1"/>
+                                <line x1="0" y1="210" x2="1000" y2="210" stroke="var(--border-subtle)" stroke-width="1"/>
+
+                                <line x1="140" y1="0" x2="140" y2="280" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.5"/>
+                                <text x="140" y="15" fill="var(--error)" font-size="14" font-weight="700" text-anchor="middle">T1</text>
+                                <line x1="420" y1="0" x2="420" y2="280" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.5"/>
+                                <text x="420" y="15" fill="var(--error)" font-size="14" font-weight="700" text-anchor="middle">T3</text>
+                                <line x1="700" y1="0" x2="700" y2="280" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.5"/>
+                                <text x="700" y="15" fill="var(--error)" font-size="14" font-weight="700" text-anchor="middle">T5</text>
+
+                                <path d="M0,140 L100,140 L140,70 L180,140 L250,140 L280,110 L320,140 L390,140 L420,60 L460,140 L530,140 L560,90 L600,140 L670,140 L700,65 L740,140 L810,140 L840,100 L880,140 L1000,140"
+                                      fill="none" stroke="var(--error)" stroke-width="3"/>
+
+                                <path d="M0,240 L120,240 L160,180 L240,240 L260,180 L340,240 L400,180 L480,240 L540,175 L620,240 L680,170 L760,240 L820,180 L900,240 L1000,240"
+                                      fill="var(--success)" opacity="0.3"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="chat-input-container" style="margin-top: 16px;">
+                        <input type="text" class="chat-input" placeholder="Ask about specific corners or technique...">
+                        <button class="chat-send-btn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direction 3: Conversational Coach -->
+        <div class="direction" data-direction="3">
+            <div class="conversational">
+                <div class="conv-summary">
+                    <div class="conv-summary-item">
+                        <div class="stat-label">Track</div>
+                        <div style="font-weight: 600;">Lime Rock Park</div>
+                    </div>
+                    <div class="conv-summary-item">
+                        <div class="stat-label">Best Lap</div>
+                        <div class="mono" style="font-weight: 700; font-size: 18px;">57.832s</div>
+                    </div>
+                    <div class="conv-summary-item">
+                        <div class="stat-label">Improvement</div>
+                        <div style="color: var(--success); font-weight: 700;">-0.4s</div>
+                    </div>
+                    <div class="conv-summary-item">
+                        <div class="stat-label">Laps</div>
+                        <div style="font-weight: 600;">25</div>
+                    </div>
+                </div>
+
+                <div class="conv-messages">
+                    <div class="conv-message ai">
+                        <div class="conv-message-header">
+                            <div class="conv-avatar">AI</div>
+                            <div class="conv-name">AI Coach</div>
+                        </div>
+                        <div class="insight-headline">
+                            You're under-braking in 4 of 7 corners — your average brake pressure is 42%, but your fastest lap used 78%
+                        </div>
+                        <p style="color: var(--text-secondary); margin-top: 12px; line-height: 1.7;">
+                            I've analyzed your 25 laps at Lime Rock Park in the MX-5 Cup. Great session overall — you improved by 0.4 seconds from your previous best! But there's a clear opportunity here in your braking technique.
+                        </p>
+                    </div>
+
+                    <div class="conv-message ai">
+                        <div class="conv-message-header">
+                            <div class="conv-avatar">AI</div>
+                            <div class="conv-name">AI Coach</div>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px;">
+                            Let me show you the data. Here's your brake and throttle trace comparing your best lap to your average:
+                        </p>
+                        <div class="conv-embedded-chart">
+                            <div class="chart-container">
+                                <svg width="100%" height="200" viewBox="0 0 1000 200" preserveAspectRatio="none">
+                                    <line x1="0" y1="50" x2="1000" y2="50" stroke="var(--border-subtle)" stroke-width="1"/>
+                                    <line x1="0" y1="100" x2="1000" y2="100" stroke="var(--border-default)" stroke-width="1"/>
+                                    <line x1="0" y1="150" x2="1000" y2="150" stroke="var(--border-subtle)" stroke-width="1"/>
+
+                                    <path d="M0,100 L100,100 L140,50 L180,100 L250,100 L280,80 L320,100 L390,100 L420,45 L460,100 L530,100 L560,65 L600,100 L670,100 L700,50 L740,100 L810,100 L840,75 L880,100 L1000,100"
+                                          fill="none" stroke="var(--trace-best)" stroke-width="3"/>
+
+                                    <path d="M0,100 L100,100 L140,75 L180,100 L250,100 L280,85 L320,100 L390,100 L420,65 L460,100 L530,100 L560,85 L600,100 L670,100 L700,75 L740,100 L810,100 L840,85 L880,100 L1000,100"
+                                          fill="none" stroke="var(--trace-average)" stroke-width="2" opacity="0.5"/>
+
+                                    <text x="140" y="15" fill="var(--text-muted)" font-size="12" text-anchor="middle">T1</text>
+                                    <text x="420" y="15" fill="var(--text-muted)" font-size="12" text-anchor="middle">T3</text>
+                                    <text x="700" y="15" fill="var(--text-muted)" font-size="12" text-anchor="middle">T5</text>
+                                </svg>
+                            </div>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-top: 12px; font-size: 14px;">
+                            The green trace is your best lap (57.832s). Notice how much deeper and harder you brake at T1, T3, and T5 compared to your average?
+                        </p>
+                    </div>
+
+                    <div class="conv-message ai">
+                        <div class="conv-message-header">
+                            <div class="conv-avatar">AI</div>
+                            <div class="conv-name">AI Coach</div>
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px;">
+                            The problem areas are clear: <span class="corner-tag">T1</span> <span class="corner-tag">T3</span> <span class="corner-tag">T5</span> <span class="corner-tag">T7</span>
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+                            <div style="background: var(--bg-elevated); padding: 12px; border-radius: 6px;">
+                                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Avg Brake Pressure</div>
+                                <div class="mono" style="font-size: 24px; font-weight: 700; color: var(--error);">42%</div>
+                            </div>
+                            <div style="background: var(--bg-elevated); padding: 12px; border-radius: 6px;">
+                                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Best Lap Pressure</div>
+                                <div class="mono" style="font-size: 24px; font-weight: 700; color: var(--success);">78%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="conv-message ai">
+                        <div class="conv-message-header">
+                            <div class="conv-avatar">AI</div>
+                            <div class="conv-name">AI Coach</div>
+                        </div>
+                        <div style="background: var(--accent-primary); color: var(--bg-base); padding: 16px; border-radius: 6px;">
+                            <div style="font-weight: 700; margin-bottom: 8px;">Focus Next Session:</div>
+                            <div>Work on increasing initial brake pressure at T5 and T7. Start with 10% more pressure at turn-in. Your best lap proves the car can handle it.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" placeholder="Ask about specific corners or request more detail...">
+                    <button class="chat-send-btn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direction 4: The Dashboard -->
+        <div class="direction" data-direction="4">
+            <div class="dashboard">
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Best Lap</div>
+                        <div class="stat-value mono">57.832s</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Lap 17 of 25</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Delta</div>
+                        <div class="stat-value" style="color: var(--success);">-0.4s</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">vs Previous Best</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Laps Completed</div>
+                        <div class="stat-value">25</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Lime Rock Park</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Focus Area</div>
+                        <div class="stat-value" style="font-size: 18px;">Braking</div>
+                        <div style="font-size: 12px; color: var(--accent-primary); margin-top: 4px;">4 corners flagged</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-insight">
+                    <div class="insight-card">
+                        <div class="insight-headline">
+                            You're under-braking in 4 of 7 corners — your average brake pressure is 42%, but your fastest lap used 78%
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.7;">
+                            Looking at your session in the Mazda MX-5 Cup, there's a clear pattern in your braking technique. The corners where you're losing time are <span class="corner-tag">T1</span> <span class="corner-tag">T3</span> <span class="corner-tag">T5</span> <span class="corner-tag">T7</span>. Your best lap proves you can brake harder — now it's about consistency.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="dashboard-content">
+                    <div class="dashboard-cards">
+                        <div class="stat-card">
+                            <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--accent-primary);">Turn 5 Deep Dive</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                                <div>
+                                    <div class="stat-label">Avg Pressure</div>
+                                    <div class="mono" style="font-size: 20px; color: var(--error); font-weight: 700;">42%</div>
+                                </div>
+                                <div>
+                                    <div class="stat-label">Best Lap</div>
+                                    <div class="mono" style="font-size: 20px; color: var(--success); font-weight: 700;">78%</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 14px; color: var(--text-secondary);">
+                                Time lost: <span class="mono" style="color: var(--error); font-weight: 600;">-0.3s</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--accent-primary);">Corner Performance</h3>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 14px;">Turn 1</span>
+                                    <span class="mono" style="color: var(--error); font-weight: 600;">-0.2s</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 14px;">Turn 3</span>
+                                    <span class="mono" style="color: var(--error); font-weight: 600;">-0.1s</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 14px;">Turn 5</span>
+                                    <span class="mono" style="color: var(--error); font-weight: 600;">-0.3s</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 14px;">Turn 7</span>
+                                    <span class="mono" style="color: var(--error); font-weight: 600;">-0.2s</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--accent-primary); color: var(--bg-base); padding: 20px; border-radius: 8px;">
+                            <div style="font-weight: 700; font-size: 14px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Focus Next Session</div>
+                            <div style="font-size: 16px; line-height: 1.5;">Work on increasing initial brake pressure at T5 and T7. Start with 10% more pressure at turn-in.</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <div class="chart-title">Brake & Throttle Trace</div>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--trace-best);"></div>
+                                    <span>Best Lap</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--trace-average);"></div>
+                                    <span>Average</span>
+                                </div>
+                            </div>
+                        </div>
+                        <svg width="100%" height="500" viewBox="0 0 1000 500" preserveAspectRatio="none">
+                            <line x1="0" y1="125" x2="1000" y2="125" stroke="var(--border-subtle)" stroke-width="1"/>
+                            <line x1="0" y1="250" x2="1000" y2="250" stroke="var(--border-default)" stroke-width="1"/>
+                            <line x1="0" y1="375" x2="1000" y2="375" stroke="var(--border-subtle)" stroke-width="1"/>
+
+                            <line x1="140" y1="0" x2="140" y2="500" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.3"/>
+                            <text x="140" y="25" fill="var(--error)" font-size="16" font-weight="700" text-anchor="middle">T1</text>
+                            <line x1="280" y1="0" x2="280" y2="500" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="280" y="25" fill="var(--text-muted)" font-size="14" text-anchor="middle">T2</text>
+                            <line x1="420" y1="0" x2="420" y2="500" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.3"/>
+                            <text x="420" y="25" fill="var(--error)" font-size="16" font-weight="700" text-anchor="middle">T3</text>
+                            <line x1="560" y1="0" x2="560" y2="500" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="560" y="25" fill="var(--text-muted)" font-size="14" text-anchor="middle">T4</text>
+                            <line x1="700" y1="0" x2="700" y2="500" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.3"/>
+                            <text x="700" y="25" fill="var(--error)" font-size="16" font-weight="700" text-anchor="middle">T5</text>
+                            <line x1="840" y1="0" x2="840" y2="500" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="840" y="25" fill="var(--text-muted)" font-size="14" text-anchor="middle">T6</text>
+
+                            <path d="M0,250 L100,250 L140,180 L180,250 L250,250 L280,200 L320,250 L390,250 L420,150 L460,250 L530,250 L560,170 L600,250 L670,250 L700,140 L740,250 L810,250 L840,190 L880,250 L1000,250"
+                                  fill="none" stroke="var(--trace-average)" stroke-width="2" opacity="0.5"/>
+
+                            <path d="M0,250 L100,250 L140,130 L180,250 L250,250 L280,200 L320,250 L390,250 L420,110 L460,250 L530,250 L560,160 L600,250 L670,250 L700,120 L740,250 L810,250 L840,180 L880,250 L1000,250"
+                                  fill="none" stroke="var(--trace-best)" stroke-width="3"/>
+
+                            <path d="M0,400 L120,400 L160,320 L240,400 L260,320 L340,400 L400,320 L480,400 L540,310 L620,400 L680,300 L760,400 L820,320 L900,400 L1000,400"
+                                  fill="var(--success)" opacity="0.25"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" placeholder="Ask about this session or request specific analysis...">
+                    <button class="chat-send-btn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direction 5: Split Screen -->
+        <div class="direction" data-direction="5">
+            <div class="split-screen">
+                <div class="split-left">
+                    <div style="margin-bottom: 32px;">
+                        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">Lime Rock Park Debrief</h1>
+                        <div style="color: var(--text-secondary); margin-bottom: 4px;">Mazda MX-5 Cup • 25 laps • Best: <span class="mono">57.832s</span></div>
+                        <div style="color: var(--success); font-weight: 600;">↓ 0.4s improvement</div>
+                    </div>
+
+                    <div class="split-coaching-section">
+                        <div class="insight-headline">
+                            You're under-braking in 4 of 7 corners — your average brake pressure is 42%, but your fastest lap used 78%
+                        </div>
+                        <p style="color: var(--text-secondary); line-height: 1.8; margin-top: 16px;">
+                            Looking at your session data, there's a clear pattern emerging in your braking technique at <span class="split-corner-ref">T1</span>, <span class="split-corner-ref">T3</span>, <span class="split-corner-ref">T5</span>, and <span class="split-corner-ref">T7</span>. While your racing line is solid and your throttle application is smooth, you're consistently leaving time on the table by not committing to the brakes hard enough at turn-in.
+                        </p>
+                    </div>
+
+                    <div class="split-coaching-section">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--accent-primary);">Turn 5 Analysis</h3>
+                        <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px;">
+                            On lap 17, when you set your personal best, you applied 78% brake pressure at <span class="split-corner-ref">T5</span> entry. Compare that to your average lap where you were only hitting 42% brake pressure at the same point.
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+                            <div class="stat-card">
+                                <div class="stat-label">Avg Pressure</div>
+                                <div class="stat-value mono" style="color: var(--error);">42%</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Best Lap</div>
+                                <div class="stat-value mono" style="color: var(--success);">78%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="split-coaching-section">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--accent-primary);">The Pattern</h3>
+                        <p style="color: var(--text-secondary); line-height: 1.8;">
+                            The extra brake pressure isn't about braking later — it's about getting the car slowed down more efficiently so you can get back to throttle earlier. On your fastest lap, you weren't just braking harder — you were also getting back to full throttle 0.3 seconds earlier at the apex of <span class="split-corner-ref">T5</span>.
+                        </p>
+                    </div>
+
+                    <div style="background: var(--accent-primary); color: var(--bg-base); padding: 20px; border-radius: 8px; margin-top: 32px;">
+                        <div style="font-weight: 700; margin-bottom: 8px; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Focus Next Session</div>
+                        <div style="font-size: 16px; line-height: 1.6;">Work on increasing initial brake pressure at T5 and T7. Start with 10% more pressure at turn-in and maintain it deeper into the corner. Your best lap proves the car can handle it.</div>
+                    </div>
+
+                    <div style="height: 80px;"></div>
+                </div>
+
+                <div class="split-right">
+                    <div class="chart-container" style="position: sticky; top: 24px;">
+                        <div class="chart-header">
+                            <div class="chart-title">Brake & Throttle Trace</div>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--trace-best);"></div>
+                                    <span>Best Lap</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background: var(--trace-average);"></div>
+                                    <span>Average</span>
+                                </div>
+                            </div>
+                        </div>
+                        <svg width="100%" height="400" viewBox="0 0 1000 400" preserveAspectRatio="none">
+                            <line x1="0" y1="100" x2="1000" y2="100" stroke="var(--border-subtle)" stroke-width="1"/>
+                            <line x1="0" y1="200" x2="1000" y2="200" stroke="var(--border-default)" stroke-width="1"/>
+                            <line x1="0" y1="300" x2="1000" y2="300" stroke="var(--border-subtle)" stroke-width="1"/>
+
+                            <line x1="140" y1="0" x2="140" y2="400" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.5"/>
+                            <text x="140" y="20" fill="var(--error)" font-size="16" font-weight="700" text-anchor="middle">T1</text>
+                            <line x1="280" y1="0" x2="280" y2="400" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="280" y="20" fill="var(--text-muted)" font-size="14" text-anchor="middle">T2</text>
+                            <line x1="420" y1="0" x2="420" y2="400" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.5"/>
+                            <text x="420" y="20" fill="var(--error)" font-size="16" font-weight="700" text-anchor="middle">T3</text>
+                            <line x1="560" y1="0" x2="560" y2="400" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="560" y="20" fill="var(--text-muted)" font-size="14" text-anchor="middle">T4</text>
+                            <line x1="700" y1="0" x2="700" y2="400" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.5"/>
+                            <text x="700" y="20" fill="var(--error)" font-size="16" font-weight="700" text-anchor="middle">T5</text>
+                            <line x1="840" y1="0" x2="840" y2="400" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                            <text x="840" y="20" fill="var(--text-muted)" font-size="14" text-anchor="middle">T6</text>
+
+                            <path d="M0,200 L100,200 L140,140 L180,200 L250,200 L280,160 L320,200 L390,200 L420,120 L460,200 L530,200 L560,140 L600,200 L670,200 L700,110 L740,200 L810,200 L840,150 L880,200 L1000,200"
+                                  fill="none" stroke="var(--trace-average)" stroke-width="2" opacity="0.5"/>
+
+                            <path d="M0,200 L100,200 L140,100 L180,200 L250,200 L280,160 L320,200 L390,200 L420,85 L460,200 L530,200 L560,125 L600,200 L670,200 L700,95 L740,200 L810,200 L840,140 L880,200 L1000,200"
+                                  fill="none" stroke="var(--trace-best)" stroke-width="3"/>
+
+                            <path d="M0,320 L120,320 L160,260 L240,320 L260,260 L340,320 L400,260 L480,320 L540,250 L620,320 L680,240 L760,320 L820,260 L900,320 L1000,320"
+                                  fill="var(--success)" opacity="0.25"/>
+                        </svg>
+                        <div style="margin-top: 16px; padding: 12px; background: var(--bg-elevated); border-radius: 6px; font-size: 12px; color: var(--text-muted);">
+                            💡 Hover corner references on the left to highlight zones on this chart
+                        </div>
+                    </div>
+                </div>
+
+                <div class="split-chat-bottom">
+                    <div class="chat-input-container">
+                        <input type="text" class="chat-input" placeholder="Ask about specific corners or technique...">
+                        <button class="chat-send-btn">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direction 6: Focused Flow -->
+        <div class="direction" data-direction="6">
+            <div class="focused-flow">
+                <div class="flow-tabs">
+                    <div class="flow-tab active" data-tab="summary">Summary</div>
+                    <div class="flow-tab" data-tab="coaching">Coaching</div>
+                    <div class="flow-tab" data-tab="telemetry">Telemetry</div>
+                    <div class="flow-tab" data-tab="chat">Chat</div>
+                </div>
+
+                <div class="flow-content">
+                    <div class="flow-panel active" data-panel="summary">
+                        <div class="flow-summary-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Track</div>
+                                <div class="stat-value" style="font-size: 20px;">Lime Rock Park</div>
+                                <div style="font-size: 14px; color: var(--text-muted); margin-top: 4px;">Mazda MX-5 Cup</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Best Lap</div>
+                                <div class="stat-value mono">57.832s</div>
+                                <div style="font-size: 14px; color: var(--text-muted); margin-top: 4px;">Lap 17 of 25</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Improvement</div>
+                                <div class="stat-value" style="color: var(--success);">-0.4s</div>
+                                <div style="font-size: 14px; color: var(--text-muted); margin-top: 4px;">vs Previous Best</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Total Laps</div>
+                                <div class="stat-value">25</div>
+                                <div style="font-size: 14px; color: var(--text-muted); margin-top: 4px;">Session Complete</div>
+                            </div>
+                        </div>
+
+                        <div class="flow-hero-card">
+                            <div style="font-size: 12px; color: var(--accent-primary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Key Insight</div>
+                            <div class="insight-headline">
+                                You're under-braking in 4 of 7 corners — your average brake pressure is 42%, but your fastest lap used 78%
+                            </div>
+                            <p style="color: var(--text-secondary); line-height: 1.8; margin-top: 16px;">
+                                Looking at your session data, there's a clear pattern emerging in your braking technique. The corners where you're losing the most time are <span class="corner-tag">T1</span> <span class="corner-tag">T3</span> <span class="corner-tag">T5</span> <span class="corner-tag">T7</span>. While your racing line is solid, you're consistently leaving time on the table by not committing to the brakes hard enough at turn-in.
+                            </p>
+                            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-default);">
+                                <div style="font-weight: 700; margin-bottom: 8px;">Focus Next Session:</div>
+                                <div style="color: var(--text-secondary);">Work on increasing initial brake pressure at T5 and T7. Start with 10% more pressure at turn-in and maintain it deeper into the corner.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flow-panel" data-panel="coaching">
+                        <div class="flow-coaching-content">
+                            <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 32px;">Coaching Analysis</h2>
+
+                            <div class="flow-coaching-section">
+                                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--accent-primary);">Overall Pattern</h3>
+                                <p style="color: var(--text-secondary); line-height: 1.8;">
+                                    Looking at your 25 laps at Lime Rock Park, there's a clear pattern in your braking technique. You're consistently under-braking at turn-in across four major corners: <span class="corner-tag">T1</span> <span class="corner-tag">T3</span> <span class="corner-tag">T5</span> <span class="corner-tag">T7</span>.
+                                </p>
+                                <div style="margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div class="stat-card">
+                                        <div class="stat-label">Average Brake Pressure</div>
+                                        <div class="stat-value mono" style="color: var(--error);">42%</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-label">Best Lap Pressure</div>
+                                        <div class="stat-value mono" style="color: var(--success);">78%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flow-coaching-section">
+                                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--accent-primary);">Turn 1 - Big Left</h3>
+                                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px;">
+                                    Your entry speed is good, but you're not getting the car slowed down fast enough. On your best lap, you hit 78% brake pressure immediately at the brake point. Your average laps are only seeing 52% pressure at the same spot.
+                                </p>
+                                <div style="background: var(--bg-elevated); padding: 12px; border-radius: 6px; border-left: 3px solid var(--error);">
+                                    <div style="font-size: 14px;">Time lost: <span class="mono" style="color: var(--error); font-weight: 600;">-0.2s</span></div>
+                                </div>
+                            </div>
+
+                            <div class="flow-coaching-section">
+                                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--accent-primary);">Turn 3 - Uphill</h3>
+                                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px;">
+                                    This uphill right-hander is tricky because the gradient hides the brake point. You need to trust your reference markers and commit to the brake pedal.
+                                </p>
+                                <div style="background: var(--bg-elevated); padding: 12px; border-radius: 6px; border-left: 3px solid var(--error);">
+                                    <div style="font-size: 14px;">Time lost: <span class="mono" style="color: var(--error); font-weight: 600;">-0.1s</span></div>
+                                </div>
+                            </div>
+
+                            <div class="flow-coaching-section">
+                                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--accent-primary);">Turn 5 - The Downhill</h3>
+                                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px;">
+                                    This is your biggest opportunity. The downhill gradient means you need to brake even harder to get the car slowed. On lap 17, you nailed it with 78% pressure. Every other lap was 30-40% less.
+                                </p>
+                                <div style="background: var(--bg-elevated); padding: 12px; border-radius: 6px; border-left: 3px solid var(--error);">
+                                    <div style="font-size: 14px;">Time lost: <span class="mono" style="color: var(--error); font-weight: 600;">-0.3s</span></div>
+                                </div>
+                            </div>
+
+                            <div class="flow-coaching-section">
+                                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--accent-primary);">Turn 7 - Final Corner</h3>
+                                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px;">
+                                    This right-hander onto the main straight is critical for lap time. More brake pressure here means earlier throttle application and higher speed down the straight.
+                                </p>
+                                <div style="background: var(--bg-elevated); padding: 12px; border-radius: 6px; border-left: 3px solid var(--error);">
+                                    <div style="font-size: 14px;">Time lost: <span class="mono" style="color: var(--error); font-weight: 600;">-0.2s</span></div>
+                                </div>
+                            </div>
+
+                            <div style="background: var(--accent-primary); color: var(--bg-base); padding: 24px; border-radius: 8px; margin-top: 32px;">
+                                <div style="font-weight: 700; margin-bottom: 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Action Plan</div>
+                                <div style="font-size: 16px; line-height: 1.6;">
+                                    Next session, focus exclusively on T5 and T7. Increase your initial brake pressure by 10% at both corners. Don't worry about lap times — just work on the braking sensation. Your best lap proves the car can handle it.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flow-panel" data-panel="telemetry">
+                        <div style="max-width: 1200px; margin: 0 auto;">
+                            <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 24px;">Telemetry Analysis</h2>
+                            <div class="chart-container">
+                                <div class="chart-header">
+                                    <div class="chart-title">Brake & Throttle Trace - Best Lap vs Average</div>
+                                    <div class="chart-legend">
+                                        <div class="legend-item">
+                                            <div class="legend-dot" style="background: var(--trace-best);"></div>
+                                            <span>Best Lap (57.832s)</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-dot" style="background: var(--trace-average);"></div>
+                                            <span>Average Lap</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-dot" style="background: var(--error);"></div>
+                                            <span>Brake</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-dot" style="background: var(--success);"></div>
+                                            <span>Throttle</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <svg width="100%" height="500" viewBox="0 0 1000 500" preserveAspectRatio="none">
+                                    <line x1="0" y1="125" x2="1000" y2="125" stroke="var(--border-subtle)" stroke-width="1"/>
+                                    <line x1="0" y1="250" x2="1000" y2="250" stroke="var(--border-default)" stroke-width="1"/>
+                                    <line x1="0" y1="375" x2="1000" y2="375" stroke="var(--border-subtle)" stroke-width="1"/>
+
+                                    <line x1="140" y1="0" x2="140" y2="500" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.4"/>
+                                    <rect x="135" y="5" width="10" height="20" fill="var(--error)" rx="2"/>
+                                    <text x="140" y="18" fill="var(--bg-base)" font-size="14" font-weight="700" text-anchor="middle">1</text>
+
+                                    <line x1="280" y1="0" x2="280" y2="500" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                                    <text x="280" y="20" fill="var(--text-muted)" font-size="14" text-anchor="middle">T2</text>
+
+                                    <line x1="420" y1="0" x2="420" y2="500" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.4"/>
+                                    <rect x="415" y="5" width="10" height="20" fill="var(--error)" rx="2"/>
+                                    <text x="420" y="18" fill="var(--bg-base)" font-size="14" font-weight="700" text-anchor="middle">3</text>
+
+                                    <line x1="560" y1="0" x2="560" y2="500" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                                    <text x="560" y="20" fill="var(--text-muted)" font-size="14" text-anchor="middle">T4</text>
+
+                                    <line x1="700" y1="0" x2="700" y2="500" stroke="var(--error)" stroke-dasharray="5,5" stroke-width="2" opacity="0.4"/>
+                                    <rect x="695" y="5" width="10" height="20" fill="var(--error)" rx="2"/>
+                                    <text x="700" y="18" fill="var(--bg-base)" font-size="14" font-weight="700" text-anchor="middle">5</text>
+
+                                    <line x1="840" y1="0" x2="840" y2="500" stroke="var(--border-default)" stroke-dasharray="5,5" stroke-width="1"/>
+                                    <text x="840" y="20" fill="var(--text-muted)" font-size="14" text-anchor="middle">T6</text>
+
+                                    <!-- Average brake -->
+                                    <path d="M0,250 L100,250 L140,180 L180,250 L250,250 L280,200 L320,250 L390,250 L420,160 L460,250 L530,250 L560,180 L600,250 L670,250 L700,170 L740,250 L810,250 L840,200 L880,250 L1000,250"
+                                          fill="none" stroke="var(--trace-average)" stroke-width="2" opacity="0.5"/>
+
+                                    <!-- Best brake -->
+                                    <path d="M0,250 L100,250 L140,120 L180,250 L250,250 L280,200 L320,250 L390,250 L420,100 L460,250 L530,250 L560,150 L600,250 L670,250 L700,110 L740,250 L810,250 L840,170 L880,250 L1000,250"
+                                          fill="none" stroke="var(--error)" stroke-width="3"/>
+
+                                    <!-- Average throttle -->
+                                    <path d="M0,400 L120,400 L160,340 L240,400 L260,340 L340,400 L400,340 L480,400 L540,330 L620,400 L680,320 L760,400 L820,340 L900,400 L1000,400"
+                                          fill="var(--trace-average)" opacity="0.2"/>
+
+                                    <!-- Best throttle -->
+                                    <path d="M0,400 L120,400 L160,300 L240,400 L260,300 L340,400 L400,300 L480,400 L540,280 L620,400 L680,270 L760,400 L820,300 L900,400 L1000,400"
+                                          fill="var(--success)" opacity="0.3"/>
+                                </svg>
+                            </div>
+
+                            <div style="margin-top: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+                                <div class="stat-card">
+                                    <div class="stat-label">Max Brake (Best)</div>
+                                    <div class="stat-value mono">78%</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">Avg Brake (Best)</div>
+                                    <div class="stat-value mono">58%</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">Max Brake (Avg)</div>
+                                    <div class="stat-value mono">42%</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">Avg Brake (Avg)</div>
+                                    <div class="stat-value mono">35%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flow-panel" data-panel="chat">
+                        <div class="flow-chat-area">
+                            <div class="conv-message ai">
+                                <div class="conv-message-header">
+                                    <div class="conv-avatar">AI</div>
+                                    <div class="conv-name">AI Coach</div>
+                                </div>
+                                <p style="color: var(--text-secondary); line-height: 1.7;">
+                                    Great session at Lime Rock Park! I've analyzed your 25 laps. You improved by 0.4 seconds, which is solid progress. The main opportunity I see is in your braking technique — you're under-braking in 4 of 7 corners.
+                                </p>
+                            </div>
+
+                            <div class="conv-message ai">
+                                <div class="conv-message-header">
+                                    <div class="conv-avatar">AI</div>
+                                    <div class="conv-name">AI Coach</div>
+                                </div>
+                                <p style="color: var(--text-secondary); line-height: 1.7;">
+                                    Check out the other tabs for detailed coaching and telemetry. Is there a specific corner or aspect of the session you'd like to discuss?
+                                </p>
+                            </div>
+
+                            <div style="flex: 1;"></div>
+
+                            <div class="chat-input-container">
+                                <input type="text" class="chat-input" placeholder="Ask about corners, technique, or strategy...">
+                                <button class="chat-send-btn">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison View -->
+        <div class="direction" data-direction="compare">
+            <div class="comparison-view">
+                <h1 class="comparison-title">Design Direction Comparison</h1>
+                <div class="comparison-grid">
+                    <div class="comparison-card" data-goto="1">
+                        <div class="comparison-thumbnail">Preview: Single Column Flow</div>
+                        <h3>Direction 1</h3>
+                        <h4>The Storyteller</h4>
+                        <div class="comparison-pros">
+                            <h5>Key Characteristics</h5>
+                            <ul>
+                                <li>Single-column, narrative flow</li>
+                                <li>Coaching reads like an article</li>
+                                <li>Minimal chrome, scroll-driven</li>
+                                <li>Charts embedded inline naturally</li>
+                                <li>Best for: Deep reading, post-session analysis</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comparison-card" data-goto="2">
+                        <div class="comparison-thumbnail">Preview: Sidebar + Split Panel</div>
+                        <h3>Direction 2</h3>
+                        <h4>Command Center</h4>
+                        <div class="comparison-pros">
+                            <h5>Key Characteristics</h5>
+                            <ul>
+                                <li>Multi-panel with sidebar navigation</li>
+                                <li>Dense, information-rich layout</li>
+                                <li>Everything visible simultaneously</li>
+                                <li>Corner shortcuts in sidebar</li>
+                                <li>Best for: Power users, quick scanning</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comparison-card" data-goto="3">
+                        <div class="comparison-thumbnail">Preview: Chat Bubbles</div>
+                        <h3>Direction 3</h3>
+                        <h4>Conversational Coach</h4>
+                        <div class="comparison-pros">
+                            <h5>Key Characteristics</h5>
+                            <ul>
+                                <li>Chat interface as primary UI</li>
+                                <li>AI insights as message bubbles</li>
+                                <li>Embedded charts in conversation</li>
+                                <li>Natural follow-up questions</li>
+                                <li>Best for: Interactive exploration, beginners</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comparison-card" data-goto="4">
+                        <div class="comparison-thumbnail">Preview: Card Grid</div>
+                        <h3>Direction 4</h3>
+                        <h4>The Dashboard</h4>
+                        <div class="comparison-pros">
+                            <h5>Key Characteristics</h5>
+                            <ul>
+                                <li>Card-based grid layout</li>
+                                <li>Stat cards across the top</li>
+                                <li>Two-column content area</li>
+                                <li>Modular, scannable design</li>
+                                <li>Best for: Quick insights, overview focus</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comparison-card" data-goto="5">
+                        <div class="comparison-thumbnail">Preview: 60/40 Split</div>
+                        <h3>Direction 5</h3>
+                        <h4>Split Screen</h4>
+                        <div class="comparison-pros">
+                            <h5>Key Characteristics</h5>
+                            <ul>
+                                <li>Fixed two-panel layout (60/40)</li>
+                                <li>Coaching left, telemetry right</li>
+                                <li>Sticky chart, always visible</li>
+                                <li>Cursor sync between panels</li>
+                                <li>Best for: Side-by-side analysis, deep dives</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comparison-card" data-goto="6">
+                        <div class="comparison-thumbnail">Preview: Tab Navigation</div>
+                        <h3>Direction 6</h3>
+                        <h4>Focused Flow</h4>
+                        <div class="comparison-pros">
+                            <h5>Key Characteristics</h5>
+                            <ul>
+                                <li>Bold tab bar navigation</li>
+                                <li>Each tab is full-screen focused</li>
+                                <li>Summary / Coaching / Telemetry / Chat</li>
+                                <li>One thing at a time approach</li>
+                                <li>Best for: Clarity, mobile-friendly</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 64px; max-width: 900px; margin-left: auto; margin-right: auto; padding: 32px; background: var(--bg-elevated); border: 1px solid var(--border-default); border-radius: 8px;">
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--accent-primary);">Evaluation Criteria</h3>
+                    <div style="display: grid; gap: 16px;">
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 4px;">First-Time User Experience</div>
+                            <div style="color: var(--text-secondary); font-size: 14px;">How quickly can a new user understand and navigate the interface?</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 4px;">Power User Efficiency</div>
+                            <div style="color: var(--text-secondary); font-size: 14px;">How fast can experienced users access deep insights?</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 4px;">Mobile Adaptability</div>
+                            <div style="color: var(--text-secondary); font-size: 14px;">How well does the layout work on smaller screens?</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 4px;">Scalability</div>
+                            <div style="color: var(--text-secondary); font-size: 14px;">How well does it handle complex sessions with 100+ laps?</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 4px;">Brand Differentiation</div>
+                            <div style="color: var(--text-secondary); font-size: 14px;">Does it feel unique compared to existing telemetry tools?</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        const navTabs = document.querySelectorAll('.nav-tab');
+        const directions = document.querySelectorAll('.direction');
+
+        function showDirection(directionNumber) {
+            // Update nav tabs
+            navTabs.forEach(tab => {
+                if (tab.dataset.direction === directionNumber) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            // Update directions
+            directions.forEach(direction => {
+                if (direction.dataset.direction === directionNumber) {
+                    direction.classList.add('active');
+                } else {
+                    direction.classList.remove('active');
+                }
+            });
+        }
+
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                showDirection(tab.dataset.direction);
+            });
+        });
+
+        // Direction 6: Flow tabs
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('flow-tab')) {
+                const tabName = e.target.dataset.tab;
+                const flowTabs = e.target.closest('.flow-tabs').querySelectorAll('.flow-tab');
+                const flowPanels = e.target.closest('.focused-flow').querySelectorAll('.flow-panel');
+
+                flowTabs.forEach(tab => {
+                    if (tab.dataset.tab === tabName) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+
+                flowPanels.forEach(panel => {
+                    if (panel.dataset.panel === tabName) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+            }
+        });
+
+        // Comparison card navigation
+        document.addEventListener('click', (e) => {
+            const card = e.target.closest('.comparison-card');
+            if (card && card.dataset.goto) {
+                showDirection(card.dataset.goto);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        // Corner tag hover effects (simple highlight)
+        document.addEventListener('mouseenter', (e) => {
+            if (e.target.classList.contains('corner-tag') || e.target.classList.contains('split-corner-ref')) {
+                e.target.style.transform = 'scale(1.05)';
+            }
+        }, true);
+
+        document.addEventListener('mouseleave', (e) => {
+            if (e.target.classList.contains('corner-tag') || e.target.classList.contains('split-corner-ref')) {
+                e.target.style.transform = 'scale(1)';
+            }
+        }, true);
+    </script>
+</body>
+</html>
