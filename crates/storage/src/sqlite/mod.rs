@@ -1,1 +1,4 @@
-//! SQLite storage implementation
+mod connection;
+pub mod queries;
+
+pub use connection::Database;

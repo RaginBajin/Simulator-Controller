@@ -10,16 +10,16 @@ generated: "2026-02-07"
 
 development_status:
   # Epic 1: Persistent Data Storage & Session History
-  epic-1: in-progress
-  1-0-project-foundation-build-setup: in-progress
-  1-2-desktop-application-runs-locally: backlog
-  1-3-session-history-persists-locally: backlog
-  1-4-parquet-telemetry-storage: backlog
-  1-5-session-crud-operations: backlog
-  1-6-session-history-list-filtering: backlog
-  1-7-data-integrity-validation: backlog
-  1-8-historical-session-import: backlog
-  1-9-reliable-updates-without-breaking-changes: backlog
+  epic-1: done
+  1-0-project-foundation-build-setup: done
+  1-2-desktop-application-runs-locally: done
+  1-3-session-history-persists-locally: done
+  1-4-parquet-telemetry-storage: done
+  1-5-session-crud-operations: done
+  1-6-session-history-list-filtering: done
+  1-7-data-integrity-validation: done
+  1-8-historical-session-import: done
+  1-9-reliable-updates-without-breaking-changes: done
   epic-1-retrospective: optional
 
   # Epic 2: Desktop Application Foundation
