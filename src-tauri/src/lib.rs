@@ -1,7 +1,9 @@
 mod commands;
 mod error;
 mod events;
+mod notifications;
 mod state;
+mod tray;
 
 use tauri::Manager;
 use tracing::{error, info, warn};
@@ -21,6 +23,7 @@ pub fn run() {
         .init();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir().map_err(|e| {
                 error!("Failed to resolve app_data_dir: {}", e);
@@ -48,6 +51,8 @@ pub fn run() {
             }
 
             app.manage(AppState::new(db, app_data_dir.clone()));
+            app.manage(notifications::NotificationState::new());
+            app.manage(tray::TrayManager::new());
 
             // Run trash cleanup asynchronously (does not block startup)
             let cleanup_state = app.state::<AppState>().inner().clone();
@@ -71,6 +76,22 @@ pub fn run() {
                 }
             });
 
+            // Set up system tray icon (idle state)
+            tray::setup_tray(app.handle())?;
+
+            // Intercept window close to minimize to tray instead of quitting
+            if let Some(window) = app.get_webview_window("main") {
+                let win = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        api.prevent_close();
+                        if let Err(e) = win.hide() {
+                            warn!("Failed to hide window on close: {}", e);
+                        }
+                    }
+                });
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -85,6 +106,9 @@ pub fn run() {
             commands::import::import_session,
             commands::import::import_session_batch,
             commands::import::get_supported_import_formats,
+            notifications::notify_debrief_ready,
+            notifications::get_notification_status,
+            notifications::reset_notification_count,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

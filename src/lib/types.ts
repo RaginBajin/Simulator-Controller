@@ -79,3 +79,22 @@ export interface AiDebrief {
   createdAt: string
   updatedAt: string
 }
+
+export type TrayStateKey = "idle" | "recording" | "ready" | "error"
+
+export interface TrayStatusDetails {
+  track?: string
+  lap?: number
+  sessionId?: string
+  lapCount?: number
+  bestTime?: string
+  errorMessage?: string
+}
+
+export interface TrayStatusPayload {
+  type: string
+  timestamp: string
+  version: string
+  state: TrayStateKey
+  details?: TrayStatusDetails
+}
