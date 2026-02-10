@@ -15,9 +15,10 @@ use tracing::{info, warn};
 use crate::events::TrayStatusPayload;
 
 /// Application states reflected in the tray icon.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(tag = "state", rename_all = "camelCase")]
 pub enum TrayState {
+    #[default]
     Idle,
     Recording {
         track: String,
@@ -34,14 +35,9 @@ pub enum TrayState {
     },
 }
 
-impl Default for TrayState {
-    fn default() -> Self {
-        TrayState::Idle
-    }
-}
-
 impl TrayState {
     /// Short string key used for event payload `state` field.
+    #[allow(dead_code)]
     pub fn state_key(&self) -> &'static str {
         match self {
             TrayState::Idle => "idle",
@@ -52,6 +48,7 @@ impl TrayState {
     }
 
     /// Tooltip text for the current state.
+    #[allow(dead_code)]
     pub fn tooltip(&self) -> String {
         match self {
             TrayState::Idle => "Pitwall \u{2014} Waiting for iRacing".to_string(),
@@ -155,11 +152,13 @@ impl TrayManager {
     }
 
     /// Get the current badge count.
+    #[allow(dead_code)]
     pub fn badge_count(&self) -> u32 {
         *self.badge_count.lock().unwrap_or_else(|e| e.into_inner())
     }
 
     /// Update the tray state and apply icon/tooltip changes.
+    #[allow(dead_code)]
     pub fn update_state(&self, app: &AppHandle, new_state: TrayState) {
         let mut state = self.state.lock().unwrap_or_else(|e| e.into_inner());
         if *state == new_state {
@@ -188,16 +187,19 @@ impl TrayManager {
     }
 
     /// Convenience: set idle state.
+    #[allow(dead_code)]
     pub fn set_idle(&self, app: &AppHandle) {
         self.update_state(app, TrayState::Idle);
     }
 
     /// Convenience: set recording state.
+    #[allow(dead_code)]
     pub fn set_recording(&self, app: &AppHandle, track: String, lap: u32) {
         self.update_state(app, TrayState::Recording { track, lap });
     }
 
     /// Convenience: set debrief-ready state and increment badge.
+    #[allow(dead_code)]
     pub fn set_debrief_ready(
         &self,
         app: &AppHandle,
@@ -222,6 +224,7 @@ impl TrayManager {
     }
 
     /// Convenience: set error state.
+    #[allow(dead_code)]
     pub fn set_error(&self, app: &AppHandle, message: String) {
         self.update_state(app, TrayState::Error { message });
     }
@@ -233,6 +236,7 @@ impl TrayManager {
     }
 
     /// Apply the correct icon for the given state.
+    #[allow(dead_code)]
     fn apply_icon(&self, app: &AppHandle, state: &TrayState) -> Result<(), String> {
         let icon_bytes: &[u8] = match state {
             TrayState::Idle => include_bytes!("../icons/tray/idle.png"),
@@ -252,6 +256,7 @@ impl TrayManager {
     }
 
     /// Apply the correct tooltip for the given state.
+    #[allow(dead_code)]
     fn apply_tooltip(&self, app: &AppHandle, state: &TrayState) -> Result<(), String> {
         if let Some(tray) = app.tray_by_id("pitwall-tray") {
             tray.set_tooltip(Some(&state.tooltip()))

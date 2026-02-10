@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 /// Emitted when a debrief notification is clicked by the user.
 /// Payload: `DebriefClickedPayload { session_id }`
+#[allow(dead_code)]
 pub const NOTIFICATION_DEBRIEF_CLICKED: &str = "notification:debrief-clicked";
 
 /// Emitted to request tray badge count update.
@@ -11,9 +12,11 @@ pub const NOTIFICATION_DEBRIEF_CLICKED: &str = "notification:debrief-clicked";
 pub const TRAY_UPDATE_BADGE: &str = "tray:update-badge";
 
 /// Emitted when the tray state changes. Frontend listens for this to mirror state.
+#[allow(dead_code)]
 pub const TRAY_STATUS_CHANGED: &str = "tray:status-changed";
 
 /// Emitted when user clicks tray icon while a debrief is ready.
+#[allow(dead_code)]
 pub const TRAY_NAVIGATE_TO_DEBRIEF: &str = "tray:navigate-to-debrief";
 
 /// Payload for `tray:status-changed` events.

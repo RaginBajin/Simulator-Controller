@@ -29,6 +29,7 @@ pub struct DebriefReadyPayload {
 /// Payload emitted when user clicks a debrief notification.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
 pub struct DebriefClickedPayload {
     pub session_id: String,
 }
@@ -217,7 +218,13 @@ fn send_notification(app: &AppHandle, payload: &DebriefReadyPayload) {
         payload.car, payload.track, payload.lap_count, payload.best_lap_time
     );
 
-    match app.notification().builder().title("Debrief Ready").body(&body).show() {
+    match app
+        .notification()
+        .builder()
+        .title("Debrief Ready")
+        .body(&body)
+        .show()
+    {
         Ok(_) => {
             info!("Notification sent for session {}", payload.session_id);
             state.mark_sent();
