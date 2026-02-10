@@ -33,7 +33,7 @@ development_status:
   epic-3: in-progress
   3-1-irsdk-connection-auto-detection: done
   3-2-telemetry-channel-capture: done
-  3-3-session-lifecycle-management: in-progress
+  3-3-session-lifecycle-management: done
   3-3b-manual-debrief-trigger: ready-for-dev
   3-4-capture-error-handling-recovery: done
   3-5-background-capture-monitoring: ready-for-dev
