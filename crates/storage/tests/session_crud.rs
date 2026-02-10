@@ -462,3 +462,87 @@ async fn test_list_deleted_sessions() {
     assert_eq!(deleted.len(), 1);
     assert_eq!(deleted[0].track_name, "Spa");
 }
+
+// -- Story 3.3b: Manual Debrief Trigger - Multiple Debriefs Per Session --
+
+#[tokio::test]
+async fn test_multiple_debriefs_per_session_not_overwritten() {
+    let (db, _dir) = setup_db().await;
+
+    // Create a session
+    let session = db.insert_session(&new_session("Spa")).await.unwrap();
+
+    // Insert first manual debrief (partial session capture at 0-100ms)
+    let debrief1 = db
+        .insert_debrief(&NewAiDebrief {
+            session_id: session.id.clone(),
+            coaching_text: Some("First manual debrief".to_string()),
+            insights_json: Some(r#"{"finding":"early_progress"}"#.to_string()),
+            recommendations_json: None,
+            provider_name: Some("anthropic".to_string()),
+            model_name: Some("claude-sonnet-4".to_string()),
+            trigger_type: Some("manual".to_string()),
+            data_range_from_ms: Some(0),
+            data_range_to_ms: Some(100_000),
+        })
+        .await
+        .unwrap();
+
+    // Insert second manual debrief (more data captured at 0-200ms)
+    let debrief2 = db
+        .insert_debrief(&NewAiDebrief {
+            session_id: session.id.clone(),
+            coaching_text: Some("Second manual debrief".to_string()),
+            insights_json: Some(r#"{"finding":"more_laps_completed"}"#.to_string()),
+            recommendations_json: None,
+            provider_name: Some("anthropic".to_string()),
+            model_name: Some("claude-sonnet-4".to_string()),
+            trigger_type: Some("manual".to_string()),
+            data_range_from_ms: Some(0),
+            data_range_to_ms: Some(200_000),
+        })
+        .await
+        .unwrap();
+
+    // Verify both debriefs exist (not overwritten)
+    assert_ne!(debrief1.id, debrief2.id);
+
+    // Query all debriefs for the session using raw SQL (since get_debrief_for_session returns only latest)
+    let debriefs: Vec<storage::AiDebrief> =
+        sqlx::query_as("SELECT * FROM ai_debriefs WHERE session_id = $1 ORDER BY created_at ASC")
+            .bind(&session.id)
+            .fetch_all(db.pool_for_testing())
+            .await
+            .unwrap();
+
+    // Verify we have both debriefs
+    assert_eq!(debriefs.len(), 2);
+
+    // Verify first debrief properties
+    assert_eq!(debriefs[0].id, debrief1.id);
+    assert_eq!(
+        debriefs[0].coaching_text.as_deref(),
+        Some("First manual debrief")
+    );
+    assert_eq!(debriefs[0].trigger_type.as_deref(), Some("manual"));
+    assert_eq!(debriefs[0].data_range_from_ms, Some(0));
+    assert_eq!(debriefs[0].data_range_to_ms, Some(100_000));
+
+    // Verify second debrief properties
+    assert_eq!(debriefs[1].id, debrief2.id);
+    assert_eq!(
+        debriefs[1].coaching_text.as_deref(),
+        Some("Second manual debrief")
+    );
+    assert_eq!(debriefs[1].trigger_type.as_deref(), Some("manual"));
+    assert_eq!(debriefs[1].data_range_from_ms, Some(0));
+    assert_eq!(debriefs[1].data_range_to_ms, Some(200_000));
+
+    // Verify get_debrief_for_session returns the latest (most recent)
+    let latest = db
+        .get_debrief_for_session(&session.id)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(latest.id, debrief2.id);
+}

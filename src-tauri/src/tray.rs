@@ -235,6 +235,22 @@ impl TrayManager {
         *count = 0;
     }
 
+    /// Update "Generate Debrief" menu item enabled state based on session availability.
+    /// Enables the menu item when sessions exist (recording or completed).
+    ///
+    /// Note: In Tauri 2.x, there's no direct way to modify menu items after creation.
+    /// The proper implementation requires rebuilding the menu or using a different approach.
+    /// For now, this method provides the interface for future implementation when
+    /// the tray menu system is refactored to support dynamic updates.
+    #[allow(dead_code)]
+    pub fn update_generate_debrief_enabled(&self, _app: &AppHandle, _enabled: bool) {
+        // TODO: Implement menu item state updates when Tauri supports it
+        // or when we refactor to rebuild the menu on state changes
+        info!(
+            "Menu item update requested but not yet implemented - requires menu rebuild approach"
+        );
+    }
+
     /// Apply the correct icon for the given state.
     #[allow(dead_code)]
     fn apply_icon(&self, app: &AppHandle, state: &TrayState) -> Result<(), String> {
@@ -360,10 +376,43 @@ fn show_main_window(app: &AppHandle) {
 /// Handle "Generate Debrief" menu click.
 fn handle_generate_debrief(app: &AppHandle) {
     info!("Generate Debrief requested from tray menu");
-    // Emit internal event that trigger_debrief command will process
-    if let Err(e) = app.emit("internal:generate-debrief-requested", ()) {
-        warn!("Failed to emit generate-debrief-requested: {}", e);
+
+    // Update tray tooltip to show processing state
+    if let Some(tray) = app.tray_by_id("pitwall-tray") {
+        if let Err(e) = tray.set_tooltip(Some("Generating debrief...")) {
+            warn!("Failed to update tooltip: {}", e);
+        }
     }
+
+    // Invoke trigger_debrief command directly
+    let app_clone = app.clone();
+    tauri::async_runtime::spawn(async move {
+        match crate::commands::capture::trigger_debrief(app_clone.clone(), None).await {
+            Ok(response) => {
+                info!(
+                    "Debrief triggered successfully for session: {}",
+                    response.session_id
+                );
+            }
+            Err(e) => {
+                warn!("Failed to trigger debrief: {}", e);
+                // Emit error event for UI to display
+                if let Err(emit_err) = app_clone.emit("debrief:error", &e) {
+                    warn!("Failed to emit debrief error event: {}", emit_err);
+                }
+            }
+        }
+
+        // Restore tooltip after processing (in real implementation, this would be done
+        // when the debrief pipeline completes via event listener)
+        if let Some(tray) = app_clone.tray_by_id("pitwall-tray") {
+            let tray_manager = app_clone.state::<TrayManager>();
+            let state = tray_manager.current_state();
+            if let Err(e) = tray.set_tooltip(Some(&state.tooltip())) {
+                warn!("Failed to restore tooltip: {}", e);
+            }
+        }
+    });
 }
 
 #[cfg(test)]
