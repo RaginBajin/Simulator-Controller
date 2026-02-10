@@ -145,6 +145,9 @@ async fn test_get_session_detail_includes_laps_and_debrief() {
         recommendations_json: Some(r#"["brake later"]"#.to_string()),
         provider_name: Some("claude".to_string()),
         model_name: Some("claude-3-5-sonnet".to_string()),
+        trigger_type: Some("automatic".to_string()),
+        data_range_from_ms: None,
+        data_range_to_ms: None,
     })
     .await
     .unwrap();
@@ -186,6 +189,9 @@ async fn test_full_session_detail_loads_under_200ms() {
         recommendations_json: None,
         provider_name: Some("claude".to_string()),
         model_name: Some("claude-3-5-sonnet".to_string()),
+        trigger_type: Some("automatic".to_string()),
+        data_range_from_ms: None,
+        data_range_to_ms: None,
     })
     .await
     .unwrap();
@@ -316,6 +322,9 @@ async fn test_insert_and_retrieve_debrief() {
             recommendations_json: Some(r#"["focus on T1 entry"]"#.to_string()),
             provider_name: Some("claude".to_string()),
             model_name: Some("claude-3-5-sonnet".to_string()),
+            trigger_type: Some("automatic".to_string()),
+            data_range_from_ms: None,
+            data_range_to_ms: None,
         })
         .await
         .unwrap();
@@ -345,6 +354,9 @@ async fn test_update_debrief() {
             recommendations_json: None,
             provider_name: Some("claude".to_string()),
             model_name: None,
+            trigger_type: Some("automatic".to_string()),
+            data_range_from_ms: None,
+            data_range_to_ms: None,
         })
         .await
         .unwrap();
@@ -397,6 +409,9 @@ async fn test_cleanup_removes_expired_sessions() {
         recommendations_json: None,
         provider_name: None,
         model_name: None,
+        trigger_type: Some("automatic".to_string()),
+        data_range_from_ms: None,
+        data_range_to_ms: None,
     })
     .await
     .unwrap();

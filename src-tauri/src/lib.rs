@@ -106,6 +106,7 @@ pub fn run() {
             commands::import::import_session,
             commands::import::import_session_batch,
             commands::import::get_supported_import_formats,
+            commands::capture::trigger_debrief,
             notifications::notify_debrief_ready,
             notifications::get_notification_status,
             notifications::reset_notification_count,

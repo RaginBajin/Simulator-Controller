@@ -108,6 +108,9 @@ pub struct AiDebrief {
     pub recommendations_json: Option<String>,
     pub provider_name: Option<String>,
     pub model_name: Option<String>,
+    pub trigger_type: Option<String>,
+    pub data_range_from_ms: Option<i64>,
+    pub data_range_to_ms: Option<i64>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -122,6 +125,9 @@ pub struct NewAiDebrief {
     pub recommendations_json: Option<String>,
     pub provider_name: Option<String>,
     pub model_name: Option<String>,
+    pub trigger_type: Option<String>,
+    pub data_range_from_ms: Option<i64>,
+    pub data_range_to_ms: Option<i64>,
 }
 
 /// Partial update fields for a debrief.

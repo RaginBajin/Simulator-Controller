@@ -14,8 +14,8 @@ pub async fn insert_debrief(
         .to_string();
 
     sqlx::query(
-        "INSERT INTO ai_debriefs (id, session_id, coaching_text, insights_json, recommendations_json, provider_name, model_name, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)"
+        "INSERT INTO ai_debriefs (id, session_id, coaching_text, insights_json, recommendations_json, provider_name, model_name, trigger_type, data_range_from_ms, data_range_to_ms, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11)"
     )
     .bind(&id)
     .bind(&new.session_id)
@@ -24,6 +24,9 @@ pub async fn insert_debrief(
     .bind(&new.recommendations_json)
     .bind(&new.provider_name)
     .bind(&new.model_name)
+    .bind(&new.trigger_type)
+    .bind(new.data_range_from_ms)
+    .bind(new.data_range_to_ms)
     .bind(&now)
     .execute(pool)
     .await?;

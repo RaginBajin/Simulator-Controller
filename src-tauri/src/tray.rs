@@ -272,8 +272,15 @@ pub fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
 
     // Build context menu
     let open_item = MenuItem::with_id(app, "open", "Open", true, None::<&str>)?;
+    let generate_debrief_item = MenuItem::with_id(
+        app,
+        "generate_debrief",
+        "Generate Debrief",
+        false,
+        None::<&str>,
+    )?;
     let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&open_item, &quit_item])?;
+    let menu = Menu::with_items(app, &[&open_item, &generate_debrief_item, &quit_item])?;
 
     let app_handle = app.clone();
     TrayIconBuilder::with_id("pitwall-tray")
@@ -283,6 +290,9 @@ pub fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         .on_menu_event(move |app, event| match event.id.as_ref() {
             "open" => {
                 show_main_window(app);
+            }
+            "generate_debrief" => {
+                handle_generate_debrief(app);
             }
             "quit" => {
                 info!("Quit requested from tray menu");
@@ -344,6 +354,15 @@ fn show_main_window(app: &AppHandle) {
         if let Err(e) = window.set_focus() {
             warn!("Failed to set focus on window: {}", e);
         }
+    }
+}
+
+/// Handle "Generate Debrief" menu click.
+fn handle_generate_debrief(app: &AppHandle) {
+    info!("Generate Debrief requested from tray menu");
+    // Emit internal event that trigger_debrief command will process
+    if let Err(e) = app.emit("internal:generate-debrief-requested", ()) {
+        warn!("Failed to emit generate-debrief-requested: {}", e);
     }
 }
 
