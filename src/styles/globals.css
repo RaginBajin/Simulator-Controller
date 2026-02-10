@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --color-base: #0A0A0F;
+  --color-surface: #141419;
+  --color-elevated: #1E1E26;
+  --color-text-primary: #F4F4F5;
+  --color-text-secondary: #B4B4BB;
+  --color-text-muted: #71717A;
+  --color-border-default: #27272A;
+  --color-border-subtle: #1E1E26;
+  --color-accent-primary: #F59E0B;
+  --color-accent-hover: #D97706;
+  --color-trace-best: #22C55E;
+  --color-trace-average: #71717A;
+  --color-trace-regression: #EF4444;
+  --color-success: #22C55E;
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-warning-text: #FBBF24;
+  --color-warning: #FBBF24;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* shadcn/ui CSS variables for component theming */
+.dark {
+  --background: #0A0A0F;
+  --foreground: #F4F4F5;
+  --card: #141419;
+  --card-foreground: #F4F4F5;
+  --popover: #141419;
+  --popover-foreground: #F4F4F5;
+  --primary: #F59E0B;
+  --primary-foreground: #0A0A0F;
+  --secondary: #1E1E26;
+  --secondary-foreground: #F4F4F5;
+  --muted: #1E1E26;
+  --muted-foreground: #71717A;
+  --accent: #1E1E26;
+  --accent-foreground: #F4F4F5;
+  --destructive: #EF4444;
+  --destructive-foreground: #F4F4F5;
+  --border: #27272A;
+  --input: #27272A;
+  --ring: #F59E0B;
+  --radius: 6px;
+}

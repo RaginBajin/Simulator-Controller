@@ -1,0 +1,128 @@
+{
+  "workflow_version": "1.2.0",
+  "timestamps": {
+    "started": "2026-01-26T13:25:00-08:00",
+    "completed": "2026-01-26T13:50:00-08:00"
+  },
+  "mode": "initial_scan",
+  "scan_level": "exhaustive",
+  "status": "completed",
+  "project_root": "/Users/jbajin/development/Projects/Simulator-Controller",
+  "output_folder": "/Users/jbajin/development/Projects/Simulator-Controller/docs/project-documentation",
+  "completed_steps": ["step_1", "step_2", "step_3", "step_4", "step_5", "step_6", "step_7"],
+  "current_step": "completed",
+  "project_types": [
+    {
+      "part_id": "main",
+      "project_type_id": "desktop",
+      "display_name": "Desktop Application"
+    }
+  ],
+  "findings": {
+    "project_classification": {
+      "repository_type": "monolith",
+      "parts_count": 1,
+      "primary_tech": "AutoHotkey"
+    },
+    "technology_stack": {
+      "primary_languages": {
+        "autohotkey": {
+          "version": "2.x",
+          "lines_of_code": 215692,
+          "file_count": 201,
+          "purpose": "Core application logic, UI, plugins, assistants"
+        },
+        "csharp": {
+          "version": ".NET 8.0",
+          "project_count": 35,
+          "purpose": "Team Server, LLM Runtime, Speech services, telemetry providers"
+        },
+        "cpp": {
+          "standard": "C++17",
+          "project_count": 15,
+          "purpose": "Native telemetry connectors (ACC, AMS2, iRacing, R3E shared memory)"
+        }
+      },
+      "frameworks": {
+        "aspnet_core": {
+          "version": "8.0",
+          "usage": "Team Server REST API"
+        },
+        "sqlite_net_pcl": {
+          "version": "1.9.172",
+          "usage": "SQLite ORM for Team Server"
+        },
+        "llamasharp": {
+          "version": "0.25.0",
+          "backends": ["CPU", "CUDA11", "CUDA12", "Vulkan"],
+          "usage": "Local LLM inference for AI Driving Coach"
+        }
+      },
+      "data_storage": {
+        "sqlite": "Team Server database",
+        "csv_files": "Telemetry data, session databases",
+        "ini_files": {
+          "count": 468,
+          "usage": "Configuration files"
+        }
+      },
+      "ai_components": {
+        "rule_engine": {
+          "type": "Custom RETE-based forward/backward chaining",
+          "rule_files": 118,
+          "car_specific_rules": 100
+        },
+        "llm_support": {
+          "providers": ["OpenAI", "Mistral", "Local LLaMA", "Ollama", "GPT4All"],
+          "usage": "Driving Coach, Conversation Booster"
+        }
+      },
+      "voice_system": {
+        "languages": ["German", "English", "Spanish", "French", "Italian", "Japanese", "Portuguese", "Chinese"],
+        "recognition": ["Microsoft Speech", "Google Speech", "Whisper"],
+        "synthesis": ["Microsoft Speech", "Google Speech"]
+      },
+      "supported_simulators": [
+        "Assetto Corsa Competizione",
+        "Assetto Corsa",
+        "Assetto Corsa EVO",
+        "iRacing",
+        "rFactor 2",
+        "Le Mans Ultimate",
+        "Automobilista 2",
+        "RaceRoom Racing Experience",
+        "Project CARS 2",
+        "Project Motor Racing",
+        "Rennsport"
+      ]
+    },
+    "documentation_inventory": {
+      "markdown_files": 75,
+      "categories": [
+        "Architecture",
+        "User Guides",
+        "AI Assistants",
+        "Voice Commands",
+        "Developer Docs",
+        "Feature Docs"
+      ],
+      "key_files": [
+        "REFACTORING_PLAN.md",
+        "ARCHITECTURE.md",
+        "AI_ASSISTANTS.md",
+        "DATA_MODELS.md",
+        "PLUGIN_SYSTEM.md",
+        "TELEMETRY_PROVIDERS.md",
+        "TEAM_SERVER_API.md"
+      ]
+    }
+  },
+  "outputs_generated": [
+    "project-scan-report.json",
+    "project-documentation/INDEX.md",
+    "project-documentation/ARCHITECTURE.md",
+    "project-documentation/SOURCE_TREE.md",
+    "project-documentation/TECHNOLOGY_STACK.md"
+  ],
+  "resume_instructions": "Workflow completed. All documentation has been generated."
+}

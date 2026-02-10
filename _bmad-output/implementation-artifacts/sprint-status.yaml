@@ -1,0 +1,75 @@
+# Sprint Status - Pitwall
+# Generated: 2026-02-07
+# Source: _bmad-output/planning-artifacts/epics-and-stories.md
+
+project: Pitwall
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+generated: "2026-02-07"
+
+development_status:
+  # Epic 1: Persistent Data Storage & Session History
+  epic-1: done
+  1-0-project-foundation-build-setup: done
+  1-2-desktop-application-runs-locally: done
+  1-3-session-history-persists-locally: done
+  1-4-parquet-telemetry-storage: done
+  1-5-session-crud-operations: done
+  1-6-session-history-list-filtering: done
+  1-7-data-integrity-validation: done
+  1-8-historical-session-import: done
+  1-9-reliable-updates-without-breaking-changes: done
+  epic-1-retrospective: optional
+
+  # Epic 2: Desktop Application Foundation
+  epic-2: backlog
+  2-1-tauri-window-tab-navigation: backlog
+  2-2-system-tray-status-indicator: backlog
+  2-3-debrief-ready-notifications: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Zero-Config Telemetry Capture Engine
+  epic-3: backlog
+  3-1-irsdk-connection-auto-detection: backlog
+  3-2-telemetry-channel-capture: backlog
+  3-3-session-lifecycle-management: backlog
+  3-3b-manual-debrief-trigger: backlog
+  3-4-capture-error-handling-recovery: backlog
+  3-5-background-capture-monitoring: backlog
+  3-6-derived-metrics-engine: backlog
+  3-7-session-type-capture: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: AI-Powered Coaching Analysis
+  epic-4: backlog
+  4-1-byok-api-key-management: backlog
+  4-2-ai-coaching-uses-preferred-provider: backlog
+  4-3-structured-coaching-prompt-engineering: backlog
+  4-4-per-corner-analysis-generation: backlog
+  4-5-session-debrief-streaming: backlog
+  4-6-confidence-scoring-ui-indicators: deferred
+  4-6a-telemetry-grounding-verification: backlog
+  4-7-car-template-system: backlog
+  4-8-anomaly-incident-detection: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Interactive Debrief Visualization
+  epic-5: backlog
+  5-1-summary-tab-with-hero-cards: backlog
+  5-2-coaching-tab-with-sidebar-navigation: backlog
+  5-3-telemetry-chart-1d-lap-distance: backlog
+  5-4-corner-zoom-cursor-sync: backlog
+  5-5-persistent-chat-interface: backlog
+  5-6-export-debrief-external-analysis: deferred
+  epic-5-retrospective: optional
+
+  # Epic 6: Desktop Integration & Settings
+  epic-6: backlog
+  6-1-settings-management: backlog
+  6-2-application-state-syncs-seamlessly: backlog
+  6-3-audio-notification-system: backlog
+  6-4-application-auto-update: backlog
+  6-5-safe-quit-without-data-loss: backlog
+  6-6-crash-recovery-preserves-sessions: backlog
+  epic-6-retrospective: optional
