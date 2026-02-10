@@ -95,6 +95,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::capture::get_capture_status,
             commands::session::get_sessions,
             commands::session::get_session_data,
             commands::session::delete_session,
