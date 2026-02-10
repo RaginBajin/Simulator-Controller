@@ -38,7 +38,7 @@ development_status:
   3-4-capture-error-handling-recovery: ready-for-dev
   3-5-background-capture-monitoring: ready-for-dev
   3-6-derived-metrics-engine: ready-for-dev
-  3-7-session-type-capture: ready-for-dev
+  3-7-session-type-capture: done
   epic-3-retrospective: optional
 
   # Epic 4: AI-Powered Coaching Analysis
