@@ -5,10 +5,7 @@ use crate::types::{GapMarker, NewGapMarker};
 use sqlx::SqlitePool;
 
 /// Inserts a new gap marker into the database.
-pub async fn insert_gap_marker(
-    pool: &SqlitePool,
-    gap: &NewGapMarker,
-) -> Result<i64, StorageError> {
+pub async fn insert_gap_marker(pool: &SqlitePool, gap: &NewGapMarker) -> Result<i64, StorageError> {
     let result = sqlx::query(
         "INSERT INTO gap_markers (session_id, start_time, end_time, duration_ms, reason, lap_position)
          VALUES (?, ?, ?, ?, ?, ?)"
@@ -34,7 +31,7 @@ pub async fn get_gap_markers_for_session(
         "SELECT id, session_id, start_time, end_time, duration_ms, reason, lap_position, created_at
          FROM gap_markers
          WHERE session_id = ?
-         ORDER BY start_time ASC"
+         ORDER BY start_time ASC",
     )
     .bind(session_id)
     .fetch_all(pool)
@@ -75,7 +72,7 @@ pub async fn mark_session_partial(
          SET status = 'partial',
              disconnected_at = ?,
              updated_at = datetime('now')
-         WHERE id = ?"
+         WHERE id = ?",
     )
     .bind(disconnected_at)
     .bind(session_id)
@@ -114,7 +111,7 @@ mod tests {
     async fn create_test_session(pool: &SqlitePool, session_id: &str) {
         sqlx::query(
             "INSERT INTO sessions (id, track_name, car_name, session_type, started_at)
-             VALUES (?, 'Spa', 'GT3', 'practice', datetime('now'))"
+             VALUES (?, 'Spa', 'GT3', 'practice', datetime('now'))",
         )
         .bind(session_id)
         .execute(pool)
@@ -222,7 +219,7 @@ mod tests {
         let session: (i32, i64) = sqlx::query_as(
             "SELECT gap_count, total_gap_duration_ms
              FROM sessions
-             WHERE id = ?"
+             WHERE id = ?",
         )
         .bind("session-1")
         .fetch_one(&pool)
@@ -246,7 +243,7 @@ mod tests {
         let session: (String, Option<String>) = sqlx::query_as(
             "SELECT status, disconnected_at
              FROM sessions
-             WHERE id = ?"
+             WHERE id = ?",
         )
         .bind("session-1")
         .fetch_one(&pool)

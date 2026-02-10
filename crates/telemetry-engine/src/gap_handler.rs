@@ -1,7 +1,7 @@
 //! Gap detection and management for telemetry capture
 
 use crate::capture_error::{GapMarker, GapReason};
-use tracing::{warn, info};
+use tracing::{info, warn};
 
 /// Configuration for gap detection
 #[derive(Debug, Clone)]
@@ -45,11 +45,7 @@ impl GapHandler {
     /// # Arguments
     /// * `current_time` - Current sample timestamp in milliseconds
     /// * `lap_position` - Optional track position (meters from start/finish line)
-    pub fn check_gap(
-        &mut self,
-        current_time: i64,
-        lap_position: Option<f64>,
-    ) -> Option<GapMarker> {
+    pub fn check_gap(&mut self, current_time: i64, lap_position: Option<f64>) -> Option<GapMarker> {
         if let Some(last_time) = self.last_sample_time {
             let delta = current_time - last_time;
 
@@ -117,7 +113,7 @@ impl GapHandler {
         match duration_ms {
             100..=500 => GapReason::Stall,       // Brief stall
             501..=5000 => GapReason::Disconnect, // Connection issue
-            _ => GapReason::Unknown,              // Very long gap or unknown cause
+            _ => GapReason::Unknown,             // Very long gap or unknown cause
         }
     }
 }

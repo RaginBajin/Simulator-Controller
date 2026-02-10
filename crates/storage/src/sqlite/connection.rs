@@ -260,10 +260,7 @@ impl Database {
 
     // -- Gap marker operations --
 
-    pub async fn insert_gap_marker(
-        &self,
-        gap: &NewGapMarker,
-    ) -> Result<i64, StorageError> {
+    pub async fn insert_gap_marker(&self, gap: &NewGapMarker) -> Result<i64, StorageError> {
         crate::sqlite::queries::gap_markers::insert_gap_marker(&self.pool, gap).await
     }
 

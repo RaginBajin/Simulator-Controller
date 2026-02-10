@@ -1,12 +1,12 @@
 //! Comprehensive integration tests for capture error handling and recovery
 
+use std::sync::{Arc, Mutex};
 use telemetry_engine::{
     capture_error::{CaptureError, GapMarker, GapReason, IpcError},
     event_emitter::{emit_capture_error, emit_reconnection_status, CaptureEventEmitter},
     gap_handler::{GapDetectionConfig, GapHandler},
     irsdk::reconnection::{ConnectionState, ReconnectionManager, ReconnectionStatus},
 };
-use std::sync::{Arc, Mutex};
 
 // Mock event emitter for testing
 #[derive(Clone)]
@@ -59,10 +59,10 @@ impl CaptureEventEmitter for TestEventEmitter {
         _details: Option<String>,
         retryable: bool,
     ) -> Result<(), String> {
-        self.events.lock().unwrap().push(format!(
-            "error:{}:{}:{}",
-            code, message, retryable
-        ));
+        self.events
+            .lock()
+            .unwrap()
+            .push(format!("error:{}:{}:{}", code, message, retryable));
         Ok(())
     }
 
@@ -139,7 +139,9 @@ fn test_reconnection_state_machine_full_cycle() {
     let gap_duration = manager.on_reconnection_success().unwrap();
     assert!(manager.is_connected());
 
-    emitter.emit_reconnected(gap_duration.as_millis() as u64).unwrap();
+    emitter
+        .emit_reconnected(gap_duration.as_millis() as u64)
+        .unwrap();
     let events = emitter.get_events();
     assert_eq!(events.len(), 6);
     assert!(events[5].contains("reconnected:"));
@@ -242,7 +244,10 @@ fn test_session_completion_event_emission() {
 
     let events = emitter.get_events();
     assert_eq!(events.len(), 1);
-    assert_eq!(events[0], "session_completed:session-123:15:45000:completed:2");
+    assert_eq!(
+        events[0],
+        "session_completed:session-123:15:45000:completed:2"
+    );
 }
 
 #[test]
@@ -364,7 +369,9 @@ fn test_complete_error_handling_workflow() {
 
     // Successful reconnection
     let gap_duration = reconnection_manager.on_reconnection_success().unwrap();
-    emitter.emit_reconnected(gap_duration.as_millis() as u64).unwrap();
+    emitter
+        .emit_reconnected(gap_duration.as_millis() as u64)
+        .unwrap();
 
     // Record the disconnection gap
     let disconnect_gap = GapMarker::new(

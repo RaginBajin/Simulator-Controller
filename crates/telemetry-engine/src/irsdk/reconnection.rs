@@ -1,7 +1,7 @@
 //! IRSDK reconnection state machine and logic
 
-use std::time::{Duration, Instant};
 use crate::capture_error::CaptureError;
+use std::time::{Duration, Instant};
 
 /// Maximum reconnection attempts (30 seconds at 1 attempt/second)
 pub const MAX_RECONNECTION_ATTEMPTS: u32 = 30;
@@ -16,10 +16,7 @@ pub enum ConnectionState {
     Connected,
 
     /// Attempting to reconnect after a disconnection
-    Reconnecting {
-        attempt: u32,
-        started_at: Instant,
-    },
+    Reconnecting { attempt: u32, started_at: Instant },
 
     /// Disconnected and not attempting to reconnect
     Disconnected,
@@ -61,7 +58,10 @@ impl ReconnectionManager {
     /// Returns Ok(()) if should attempt connection, Err(CaptureError) if timeout exceeded.
     pub fn tick_reconnection(&mut self) -> Result<ReconnectionStatus, CaptureError> {
         match &self.state {
-            ConnectionState::Reconnecting { attempt, started_at } => {
+            ConnectionState::Reconnecting {
+                attempt,
+                started_at,
+            } => {
                 let elapsed = started_at.elapsed();
                 let attempt = *attempt;
 

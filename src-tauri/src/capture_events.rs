@@ -1,17 +1,19 @@
 //! Tauri event emitter implementation for capture events
 
+use crate::events::{CaptureError, CaptureReconnected, CaptureReconnecting, SessionCompleted};
 use tauri::{AppHandle, Emitter};
 use telemetry_engine::event_emitter::CaptureEventEmitter;
-use crate::events::{CaptureReconnecting, CaptureReconnected, CaptureError, SessionCompleted};
 
 /// Tauri implementation of the CaptureEventEmitter trait
 #[derive(Clone)]
+#[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
 pub struct TauriEventEmitter {
     app_handle: AppHandle,
 }
 
 impl TauriEventEmitter {
     /// Creates a new Tauri event emitter
+    #[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
     pub fn new(app_handle: AppHandle) -> Self {
         Self { app_handle }
     }

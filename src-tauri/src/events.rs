@@ -20,15 +20,19 @@ pub const TRAY_STATUS_CHANGED: &str = "tray:status-changed";
 pub const TRAY_NAVIGATE_TO_DEBRIEF: &str = "tray:navigate-to-debrief";
 
 /// Emitted when IRSDK is attempting to reconnect after a disconnection.
+#[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
 pub const CAPTURE_RECONNECTING: &str = "capture:reconnecting";
 
 /// Emitted when IRSDK reconnection succeeds.
+#[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
 pub const CAPTURE_RECONNECTED: &str = "capture:reconnected";
 
 /// Emitted when a capture error occurs (unrecoverable).
+#[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
 pub const CAPTURE_ERROR: &str = "capture:error";
 
 /// Emitted when a session completes (normal or partial).
+#[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
 pub const SESSION_COMPLETED: &str = "session:completed";
 
 /// Payload for `tray:status-changed` events.
@@ -68,6 +72,7 @@ pub struct TrayStatusDetails {
 /// Payload for `capture:reconnecting` events.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
 pub struct CaptureReconnecting {
     #[serde(rename = "type")]
     pub event_type: String,
@@ -81,6 +86,7 @@ pub struct CaptureReconnecting {
 /// Payload for `capture:reconnected` events.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
 pub struct CaptureReconnected {
     #[serde(rename = "type")]
     pub event_type: String,
@@ -92,6 +98,7 @@ pub struct CaptureReconnected {
 /// Payload for `capture:error` events.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
 pub struct CaptureError {
     #[serde(rename = "type")]
     pub event_type: String,
@@ -107,6 +114,7 @@ pub struct CaptureError {
 /// Payload for `session:completed` events.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
 pub struct SessionCompleted {
     #[serde(rename = "type")]
     pub event_type: String,
@@ -121,6 +129,7 @@ pub struct SessionCompleted {
 
 impl CaptureReconnecting {
     /// Creates a new reconnecting event payload
+    #[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
     pub fn new(attempt_number: u32, max_attempts: u32, elapsed_ms: u64) -> Self {
         Self {
             event_type: CAPTURE_RECONNECTING.to_string(),
@@ -135,6 +144,7 @@ impl CaptureReconnecting {
 
 impl CaptureReconnected {
     /// Creates a new reconnected event payload
+    #[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
     pub fn new(gap_duration_ms: u64) -> Self {
         Self {
             event_type: CAPTURE_RECONNECTED.to_string(),
@@ -147,6 +157,7 @@ impl CaptureReconnected {
 
 impl CaptureError {
     /// Creates a new capture error event payload
+    #[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
     pub fn new(code: String, message: String, details: Option<String>, retryable: bool) -> Self {
         Self {
             event_type: CAPTURE_ERROR.to_string(),
@@ -162,6 +173,7 @@ impl CaptureError {
 
 impl SessionCompleted {
     /// Creates a new session completed event payload
+    #[allow(dead_code)] // Will be used in Story 3.5 for background capture monitoring
     pub fn new(
         session_id: String,
         lap_count: i32,
@@ -257,4 +269,3 @@ mod tests {
         assert!(json.contains("\"version\":\"1.0\""));
     }
 }
-

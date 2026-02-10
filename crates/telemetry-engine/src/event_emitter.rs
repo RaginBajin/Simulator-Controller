@@ -120,10 +120,10 @@ mod tests {
             _details: Option<String>,
             retryable: bool,
         ) -> Result<(), String> {
-            self.events.lock().unwrap().push(format!(
-                "error:{}:{}:{}",
-                code, message, retryable
-            ));
+            self.events
+                .lock()
+                .unwrap()
+                .push(format!("error:{}:{}:{}", code, message, retryable));
             Ok(())
         }
 
@@ -221,6 +221,9 @@ mod tests {
 
         let events = emitter.get_events();
         assert_eq!(events.len(), 1);
-        assert_eq!(events[0], "session_completed:session-123:15:45000:completed:2");
+        assert_eq!(
+            events[0],
+            "session_completed:session-123:15:45000:completed:2"
+        );
     }
 }

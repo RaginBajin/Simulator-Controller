@@ -63,11 +63,14 @@ impl CaptureEventEmitter for MockEventEmitter {
         max_attempts: u32,
         elapsed_ms: u64,
     ) -> Result<(), String> {
-        self.events.lock().unwrap().push(EmittedEvent::Reconnecting {
-            attempt: attempt_number,
-            max_attempts,
-            elapsed_ms,
-        });
+        self.events
+            .lock()
+            .unwrap()
+            .push(EmittedEvent::Reconnecting {
+                attempt: attempt_number,
+                max_attempts,
+                elapsed_ms,
+            });
         Ok(())
     }
 
@@ -319,13 +322,7 @@ fn test_event_emission_on_session_completion() {
         .unwrap();
 
     emitter
-        .emit_session_completed(
-            "session-2".to_string(),
-            8,
-            20000,
-            "partial".to_string(),
-            5,
-        )
+        .emit_session_completed("session-2".to_string(), 8, 20000, "partial".to_string(), 5)
         .unwrap();
 
     let events = emitter.get_events();
@@ -399,8 +396,12 @@ fn test_complete_error_recovery_flow() {
         .unwrap();
 
     // 6. Record the disconnection gap
-    let disconnect_gap =
-        GapMarker::new(1400, 1400 + gap_duration.as_millis() as i64, GapReason::Disconnect, Some(800.0));
+    let disconnect_gap = GapMarker::new(
+        1400,
+        1400 + gap_duration.as_millis() as i64,
+        GapReason::Disconnect,
+        Some(800.0),
+    );
     handler.record_gap(disconnect_gap);
 
     assert_eq!(handler.gap_count(), 2); // Original stall + disconnect gap

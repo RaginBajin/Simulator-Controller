@@ -2,4 +2,7 @@
 
 pub mod reconnection;
 
-pub use reconnection::{ConnectionState, ReconnectionManager, ReconnectionStatus, MAX_RECONNECTION_ATTEMPTS, RECONNECTION_INTERVAL};
+pub use reconnection::{
+    ConnectionState, ReconnectionManager, ReconnectionStatus, MAX_RECONNECTION_ATTEMPTS,
+    RECONNECTION_INTERVAL,
+};
