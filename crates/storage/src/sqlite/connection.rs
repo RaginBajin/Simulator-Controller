@@ -258,6 +258,38 @@ impl Database {
         crate::sqlite::queries::sessions::permanently_delete_session(&self.pool, id).await
     }
 
+    // -- Gap marker operations --
+
+    pub async fn insert_gap_marker(&self, gap: &NewGapMarker) -> Result<i64, StorageError> {
+        crate::sqlite::queries::gap_markers::insert_gap_marker(&self.pool, gap).await
+    }
+
+    pub async fn get_gap_markers_for_session(
+        &self,
+        session_id: &str,
+    ) -> Result<Vec<GapMarker>, StorageError> {
+        crate::sqlite::queries::gap_markers::get_gap_markers_for_session(&self.pool, session_id)
+            .await
+    }
+
+    pub async fn update_session_gap_summary(&self, session_id: &str) -> Result<(), StorageError> {
+        crate::sqlite::queries::gap_markers::update_session_gap_summary(&self.pool, session_id)
+            .await
+    }
+
+    pub async fn mark_session_partial(
+        &self,
+        session_id: &str,
+        disconnected_at: &str,
+    ) -> Result<(), StorageError> {
+        crate::sqlite::queries::gap_markers::mark_session_partial(
+            &self.pool,
+            session_id,
+            disconnected_at,
+        )
+        .await
+    }
+
     // -- Import operations --
 
     pub async fn find_duplicate_session(

@@ -3,9 +3,14 @@
 use std::collections::HashMap;
 
 pub mod reader;
+pub mod reconnection;
 pub mod types;
 
 pub use reader::IrsdkReader;
+pub use reconnection::{
+    ConnectionState, ReconnectionManager, ReconnectionStatus, MAX_RECONNECTION_ATTEMPTS,
+    RECONNECTION_INTERVAL,
+};
 pub use types::{ConnectionEvent, ConnectionStatus, IrsdkHeader, IrsdkVarHeader};
 
 /// Channel name mapping from IRSDK variable names to canonical schema names.

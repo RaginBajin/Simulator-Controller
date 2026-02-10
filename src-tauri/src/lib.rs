@@ -1,3 +1,4 @@
+mod capture_events;
 mod commands;
 mod error;
 mod events;
