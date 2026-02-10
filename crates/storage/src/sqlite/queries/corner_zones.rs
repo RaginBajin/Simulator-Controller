@@ -5,6 +5,9 @@
 use crate::error::StorageError;
 use sqlx::SqlitePool;
 
+/// Type alias for corner zone query results to reduce complexity
+type CornerZoneQueryRow = (i64, String, i32, String, f64, f64, Option<f64>, Option<f64>);
+
 /// Corner zone record from database.
 #[derive(Debug, Clone)]
 pub struct CornerZone {
@@ -83,7 +86,7 @@ pub async fn get_corner_zones(
     pool: &SqlitePool,
     session_id: &str,
 ) -> Result<Vec<CornerZone>, StorageError> {
-    let rows: Vec<(i64, String, i32, String, f64, f64, Option<f64>, Option<f64>)> = sqlx::query_as(
+    let rows: Vec<CornerZoneQueryRow> = sqlx::query_as(
         r#"
         SELECT id, session_id, corner_id, name, start_distance, end_distance, brake_onset_distance, apex_distance
         FROM corner_zones
@@ -97,16 +100,27 @@ pub async fn get_corner_zones(
 
     Ok(rows
         .into_iter()
-        .map(|(id, session_id, corner_id, name, start_distance, end_distance, brake_onset_distance, apex_distance)| CornerZone {
-            id,
-            session_id,
-            corner_id,
-            name,
-            start_distance,
-            end_distance,
-            brake_onset_distance,
-            apex_distance,
-        })
+        .map(
+            |(
+                id,
+                session_id,
+                corner_id,
+                name,
+                start_distance,
+                end_distance,
+                brake_onset_distance,
+                apex_distance,
+            )| CornerZone {
+                id,
+                session_id,
+                corner_id,
+                name,
+                start_distance,
+                end_distance,
+                brake_onset_distance,
+                apex_distance,
+            },
+        )
         .collect())
 }
 
@@ -124,7 +138,7 @@ pub async fn get_corner_zone(
     session_id: &str,
     corner_id: i32,
 ) -> Result<Option<CornerZone>, StorageError> {
-    let row: Option<(i64, String, i32, String, f64, f64, Option<f64>, Option<f64>)> = sqlx::query_as(
+    let row: Option<CornerZoneQueryRow> = sqlx::query_as(
         r#"
         SELECT id, session_id, corner_id, name, start_distance, end_distance, brake_onset_distance, apex_distance
         FROM corner_zones
@@ -136,16 +150,27 @@ pub async fn get_corner_zone(
     .fetch_optional(pool)
     .await?;
 
-    Ok(row.map(|(id, session_id, corner_id, name, start_distance, end_distance, brake_onset_distance, apex_distance)| CornerZone {
-        id,
-        session_id,
-        corner_id,
-        name,
-        start_distance,
-        end_distance,
-        brake_onset_distance,
-        apex_distance,
-    }))
+    Ok(row.map(
+        |(
+            id,
+            session_id,
+            corner_id,
+            name,
+            start_distance,
+            end_distance,
+            brake_onset_distance,
+            apex_distance,
+        )| CornerZone {
+            id,
+            session_id,
+            corner_id,
+            name,
+            start_distance,
+            end_distance,
+            brake_onset_distance,
+            apex_distance,
+        },
+    ))
 }
 
 #[cfg(test)]
@@ -260,6 +285,10 @@ mod tests {
 
         assert_eq!(corner.name, "Turn 1", "Should have updated name");
         assert_eq!(corner.start_distance, 105.0, "Should have updated start");
-        assert_eq!(corner.apex_distance, Some(180.0), "Should have updated apex");
+        assert_eq!(
+            corner.apex_distance,
+            Some(180.0),
+            "Should have updated apex"
+        );
     }
 }

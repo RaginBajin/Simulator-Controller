@@ -4,8 +4,8 @@
 //! Performance target: <10ms per lap (NFR2).
 
 use super::types::DerivedMetrics;
-use storage::error::StorageError;
 use std::path::Path;
+use storage::error::StorageError;
 
 /// Compute all derived metrics for a session.
 ///
@@ -89,6 +89,10 @@ mod tests {
         assert!(result.is_ok(), "Stub implementation should succeed");
         let metrics = result.unwrap();
         assert_eq!(metrics.session_id, "test_session");
-        assert_eq!(metrics.brake_applications.len(), 0, "Stub returns empty data");
+        assert_eq!(
+            metrics.brake_applications.len(),
+            0,
+            "Stub returns empty data"
+        );
     }
 }

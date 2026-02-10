@@ -124,10 +124,7 @@ mod tests {
         ];
 
         let result = analyze_trail_braking(&brake_app, &telemetry, 0.3, 0.1);
-        assert!(
-            result.is_none(),
-            "Should be None when no turn-in detected"
-        );
+        assert!(result.is_none(), "Should be None when no turn-in detected");
     }
 
     #[test]

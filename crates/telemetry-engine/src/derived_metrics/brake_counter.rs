@@ -68,7 +68,9 @@ pub fn count_brake_applications(
                     sample
                 };
 
-                let duration_ms = end_sample.timestamp_ms.saturating_sub(start_sample.timestamp_ms);
+                let duration_ms = end_sample
+                    .timestamp_ms
+                    .saturating_sub(start_sample.timestamp_ms);
 
                 applications.push(BrakeApplication {
                     start_distance: start_sample.distance,
@@ -89,7 +91,9 @@ pub fn count_brake_applications(
         let start_sample = &lap_telemetry[brake_start_idx];
         let end_sample = lap_telemetry.last().unwrap();
 
-        let duration_ms = end_sample.timestamp_ms.saturating_sub(start_sample.timestamp_ms);
+        let duration_ms = end_sample
+            .timestamp_ms
+            .saturating_sub(start_sample.timestamp_ms);
 
         applications.push(BrakeApplication {
             start_distance: start_sample.distance,
@@ -163,10 +167,10 @@ mod tests {
     fn test_single_brake_application() {
         let telemetry = vec![
             create_sample(0.0, 0.0, 0),
-            create_sample(10.0, 0.1, 100),  // brake starts
-            create_sample(20.0, 0.8, 200),  // peak
+            create_sample(10.0, 0.1, 100), // brake starts
+            create_sample(20.0, 0.8, 200), // peak
             create_sample(30.0, 0.5, 300),
-            create_sample(40.0, 0.0, 400),  // brake released
+            create_sample(40.0, 0.0, 400), // brake released
             create_sample(50.0, 0.0, 500),
         ];
 
@@ -184,7 +188,7 @@ mod tests {
     fn test_debounce_filters_single_spike() {
         let telemetry = vec![
             create_sample(0.0, 0.0, 0),
-            create_sample(10.0, 0.1, 100),  // single spike - should be filtered
+            create_sample(10.0, 0.1, 100), // single spike - should be filtered
             create_sample(20.0, 0.0, 200),
             create_sample(30.0, 0.0, 300),
         ];
@@ -197,22 +201,26 @@ mod tests {
     fn test_debounce_allows_two_consecutive_samples() {
         let telemetry = vec![
             create_sample(0.0, 0.0, 0),
-            create_sample(10.0, 0.1, 100),  // brake starts
-            create_sample(20.0, 0.2, 200),  // consecutive - passes debounce
-            create_sample(30.0, 0.0, 300),  // brake released
+            create_sample(10.0, 0.1, 100), // brake starts
+            create_sample(20.0, 0.2, 200), // consecutive - passes debounce
+            create_sample(30.0, 0.0, 300), // brake released
         ];
 
         let apps = count_brake_applications(&telemetry, 0.05);
-        assert_eq!(apps.len(), 1, "Two consecutive samples should pass debounce");
+        assert_eq!(
+            apps.len(),
+            1,
+            "Two consecutive samples should pass debounce"
+        );
     }
 
     #[test]
     fn test_multiple_brake_applications() {
         let telemetry = vec![
             create_sample(0.0, 0.0, 0),
-            create_sample(50.0, 0.7, 100),  // brake 1 start
+            create_sample(50.0, 0.7, 100), // brake 1 start
             create_sample(60.0, 0.8, 200),
-            create_sample(70.0, 0.0, 300),  // brake 1 end
+            create_sample(70.0, 0.0, 300), // brake 1 end
             create_sample(100.0, 0.0, 400),
             create_sample(200.0, 0.6, 500), // brake 2 start
             create_sample(210.0, 0.9, 600),
@@ -233,8 +241,8 @@ mod tests {
     fn test_brake_application_ending_at_lap_end() {
         let telemetry = vec![
             create_sample(0.0, 0.0, 0),
-            create_sample(500.0, 0.7, 500),  // brake starts
-            create_sample(510.0, 0.8, 600),  // still braking at end
+            create_sample(500.0, 0.7, 500), // brake starts
+            create_sample(510.0, 0.8, 600), // still braking at end
         ];
 
         let apps = count_brake_applications(&telemetry, 0.05);

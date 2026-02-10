@@ -24,6 +24,6 @@ pub use pipeline::compute_derived_metrics;
 pub use tire_degradation::{compute_tire_degradation, segment_into_stints};
 pub use trail_braking::analyze_trail_braking;
 pub use types::{
-    BrakeApplication, CornerZone, DegradationSeverity, DerivedMetrics, MetricType,
-    TireDegradation, TrailBrakingPhase,
+    BrakeApplication, CornerZone, DegradationSeverity, DerivedMetrics, MetricType, TireDegradation,
+    TrailBrakingPhase,
 };

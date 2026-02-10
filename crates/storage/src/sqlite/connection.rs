@@ -328,6 +328,7 @@ impl Database {
     }
 
     /// Expose pool for query functions that need direct pool access.
+    #[allow(dead_code)]
     pub(crate) fn pool(&self) -> &SqlitePool {
         &self.pool
     }

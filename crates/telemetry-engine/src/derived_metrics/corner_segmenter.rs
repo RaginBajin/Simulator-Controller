@@ -128,13 +128,12 @@ pub fn compute_corner_metrics(
     let exit_speed = corner_samples.last().map(|s| s.speed).unwrap_or(0.0);
 
     // Time in corner
-    let time_in_corner_ms = if let (Some(first), Some(last)) =
-        (corner_samples.first(), corner_samples.last())
-    {
-        last.timestamp_ms.saturating_sub(first.timestamp_ms)
-    } else {
-        0
-    };
+    let time_in_corner_ms =
+        if let (Some(first), Some(last)) = (corner_samples.first(), corner_samples.last()) {
+            last.timestamp_ms.saturating_sub(first.timestamp_ms)
+        } else {
+            0
+        };
 
     // Trail brake distance (distance from brake onset to apex while braking)
     let trail_brake_avg_distance = if let Some(brake_onset) = corner.brake_onset_distance {
@@ -279,12 +278,12 @@ fn find_apex_distance(turn_zone: &Zone, telemetry: &[TelemetrySample]) -> f64 {
     let mut apex_dist = turn_zone.start_distance;
 
     for sample in telemetry {
-        if sample.distance >= turn_zone.start_distance && sample.distance <= turn_zone.end_distance
+        if sample.distance >= turn_zone.start_distance
+            && sample.distance <= turn_zone.end_distance
+            && sample.speed < min_speed
         {
-            if sample.speed < min_speed {
-                min_speed = sample.speed;
-                apex_dist = sample.distance;
-            }
+            min_speed = sample.speed;
+            apex_dist = sample.distance;
         }
     }
 

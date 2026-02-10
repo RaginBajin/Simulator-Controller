@@ -144,25 +144,16 @@ mod tests {
         });
 
         // Insert metrics
-        let id = insert_derived_metrics(
-            db.pool(),
-            &session_id,
-            "brake_count",
-            &test_data,
-        )
-        .await
-        .unwrap();
+        let id = insert_derived_metrics(db.pool(), &session_id, "brake_count", &test_data)
+            .await
+            .unwrap();
 
         assert!(id > 0, "Should return valid ID");
 
         // Retrieve metrics
-        let retrieved = get_derived_metrics(
-            db.pool(),
-            &session_id,
-            "brake_count",
-        )
-        .await
-        .unwrap();
+        let retrieved = get_derived_metrics(db.pool(), &session_id, "brake_count")
+            .await
+            .unwrap();
 
         assert!(retrieved.is_some(), "Should find inserted metrics");
         assert_eq!(retrieved.unwrap(), test_data, "Retrieved data should match");
@@ -176,34 +167,20 @@ mod tests {
         let data_v2 = json!({"count": 15});
 
         // Insert first version
-        insert_derived_metrics(
-            db.pool(),
-            &session_id,
-            "brake_count",
-            &data_v1,
-        )
-        .await
-        .unwrap();
+        insert_derived_metrics(db.pool(), &session_id, "brake_count", &data_v1)
+            .await
+            .unwrap();
 
         // Insert second version (should replace)
-        insert_derived_metrics(
-            db.pool(),
-            &session_id,
-            "brake_count",
-            &data_v2,
-        )
-        .await
-        .unwrap();
+        insert_derived_metrics(db.pool(), &session_id, "brake_count", &data_v2)
+            .await
+            .unwrap();
 
         // Verify latest version is stored
-        let retrieved = get_derived_metrics(
-            db.pool(),
-            &session_id,
-            "brake_count",
-        )
-        .await
-        .unwrap()
-        .unwrap();
+        let retrieved = get_derived_metrics(db.pool(), &session_id, "brake_count")
+            .await
+            .unwrap()
+            .unwrap();
 
         assert_eq!(retrieved, data_v2, "Should have latest version");
     }
@@ -213,14 +190,9 @@ mod tests {
         let (db, _temp, session_id) = setup_test_db().await;
 
         // Insert multiple metric types
-        insert_derived_metrics(
-            db.pool(),
-            &session_id,
-            "brake_count",
-            &json!({"count": 12}),
-        )
-        .await
-        .unwrap();
+        insert_derived_metrics(db.pool(), &session_id, "brake_count", &json!({"count": 12}))
+            .await
+            .unwrap();
 
         insert_derived_metrics(
             db.pool(),
@@ -232,12 +204,9 @@ mod tests {
         .unwrap();
 
         // Retrieve all
-        let all_metrics = get_all_derived_metrics(
-            db.pool(),
-            &session_id,
-        )
-        .await
-        .unwrap();
+        let all_metrics = get_all_derived_metrics(db.pool(), &session_id)
+            .await
+            .unwrap();
 
         assert_eq!(all_metrics.len(), 2, "Should retrieve both metrics");
         assert_eq!(all_metrics[0].0, "brake_count");
