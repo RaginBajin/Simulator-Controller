@@ -196,6 +196,106 @@ impl IrsdkReader {
             "IRSDK is only supported on Windows",
         ))
     }
+
+    /// Read variable headers from shared memory
+    #[cfg(target_os = "windows")]
+    pub fn read_var_headers(&self) -> io::Result<Vec<super::types::IrsdkVarHeader>> {
+        let header = self.read_header()?;
+        let mapped_view = self.mapped_view.ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::NotConnected,
+                "Not connected to shared memory",
+            )
+        })?;
+
+        let mut var_headers = Vec::with_capacity(header.num_vars as usize);
+
+        unsafe {
+            let base_ptr = mapped_view.Value as *const u8;
+            let var_header_ptr = base_ptr.add(header.var_header_offset as usize);
+
+            for i in 0..header.num_vars {
+                let offset = i as usize * std::mem::size_of::<super::types::IrsdkVarHeader>();
+                let header_ptr = var_header_ptr.add(offset) as *const super::types::IrsdkVarHeader;
+                var_headers.push(*header_ptr);
+            }
+        }
+
+        Ok(var_headers)
+    }
+
+    /// Read telemetry data from the latest buffer
+    #[cfg(target_os = "windows")]
+    pub fn read_telemetry_data(&self) -> io::Result<Vec<u8>> {
+        let header = self.read_header()?;
+        let mapped_view = self.mapped_view.ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::NotConnected,
+                "Not connected to shared memory",
+            )
+        })?;
+
+        // Find the latest buffer using tick counts
+        let mut latest_buf_idx = 0;
+        let mut latest_tick = 0;
+
+        for i in 0..header.num_buf.min(4) {
+            let tick = header.var_buf[i as usize].tick_count;
+            if tick > latest_tick {
+                latest_tick = tick;
+                latest_buf_idx = i;
+            }
+        }
+
+        let buf_info = &header.var_buf[latest_buf_idx as usize];
+        let buf_len = header.buf_len as usize;
+
+        unsafe {
+            let base_ptr = mapped_view.Value as *const u8;
+            let buf_ptr = base_ptr.add(buf_info.buf_offset as usize);
+            let buf_slice = std::slice::from_raw_parts(buf_ptr, buf_len);
+            Ok(buf_slice.to_vec())
+        }
+    }
+
+    /// Read a float value from telemetry data at given offset
+    #[cfg(target_os = "windows")]
+    pub fn read_float(&self, data: &[u8], offset: usize) -> Option<f32> {
+        if offset + 4 > data.len() {
+            return None;
+        }
+        let bytes: [u8; 4] = data[offset..offset + 4].try_into().ok()?;
+        Some(f32::from_le_bytes(bytes))
+    }
+
+    /// Read a double value from telemetry data at given offset
+    #[cfg(target_os = "windows")]
+    pub fn read_double(&self, data: &[u8], offset: usize) -> Option<f64> {
+        if offset + 8 > data.len() {
+            return None;
+        }
+        let bytes: [u8; 8] = data[offset..offset + 8].try_into().ok()?;
+        Some(f64::from_le_bytes(bytes))
+    }
+
+    /// Read an int value from telemetry data at given offset
+    #[cfg(target_os = "windows")]
+    pub fn read_int(&self, data: &[u8], offset: usize) -> Option<i32> {
+        if offset + 4 > data.len() {
+            return None;
+        }
+        let bytes: [u8; 4] = data[offset..offset + 4].try_into().ok()?;
+        Some(i32::from_le_bytes(bytes))
+    }
+
+    /// Read a bool value from telemetry data at given offset
+    #[cfg(target_os = "windows")]
+    pub fn read_bool(&self, data: &[u8], offset: usize) -> Option<bool> {
+        if offset >= data.len() {
+            return None;
+        }
+        Some(data[offset] != 0)
+    }
 }
 
 impl Default for IrsdkReader {
