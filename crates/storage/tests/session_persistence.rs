@@ -9,6 +9,7 @@ fn new_session() -> NewSession {
         started_at: chrono::Utc::now()
             .format("%Y-%m-%dT%H:%M:%S%.3fZ")
             .to_string(),
+        raw_session_type: None,
     }
 }
 
@@ -72,6 +73,7 @@ async fn test_list_sessions_performance_1000() {
             started_at: chrono::Utc::now()
                 .format("%Y-%m-%dT%H:%M:%S%.3fZ")
                 .to_string(),
+            raw_session_type: None,
         };
         db.insert_session(&session).await.unwrap();
     }

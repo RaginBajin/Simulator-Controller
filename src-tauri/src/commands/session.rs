@@ -9,12 +9,14 @@ use crate::error::AppError;
 use crate::state::AppState;
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub async fn get_sessions(
     state: State<'_, AppState>,
     track: Option<String>,
     car: Option<String>,
     date_start: Option<String>,
     date_end: Option<String>,
+    session_type: Option<String>,
     limit: Option<i64>,
     offset: Option<i64>,
 ) -> Result<Vec<SessionSummary>, AppError> {
@@ -23,6 +25,7 @@ pub async fn get_sessions(
         car,
         date_start,
         date_end,
+        session_type,
     };
     let opts = ListOptions {
         limit: limit.unwrap_or(50),
@@ -62,12 +65,14 @@ pub async fn get_session_stats(
     car: Option<String>,
     date_start: Option<String>,
     date_end: Option<String>,
+    session_type: Option<String>,
 ) -> Result<SessionStats, AppError> {
     let filters = FilterOptions {
         track,
         car,
         date_start,
         date_end,
+        session_type,
     };
     state
         .db

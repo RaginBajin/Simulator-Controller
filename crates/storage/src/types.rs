@@ -24,6 +24,7 @@ pub struct Session {
     pub integrity_validated_at: Option<String>,
     pub import_source: Option<String>,
     pub import_format: Option<String>,
+    pub raw_session_type: Option<String>,
 }
 
 /// Input for creating a new session (excludes auto-generated fields).
@@ -34,6 +35,7 @@ pub struct NewSession {
     pub car_name: String,
     pub session_type: String,
     pub started_at: String,
+    pub raw_session_type: Option<String>,
 }
 
 /// Partial update fields for an existing session.
@@ -173,6 +175,7 @@ pub struct FilterOptions {
     pub car: Option<String>,
     pub date_start: Option<String>,
     pub date_end: Option<String>,
+    pub session_type: Option<String>,
 }
 
 /// Aggregate statistics for the current filter set.

@@ -12,6 +12,7 @@ fn new_session(track: &str) -> NewSession {
         started_at: chrono::Utc::now()
             .format("%Y-%m-%dT%H:%M:%S%.3fZ")
             .to_string(),
+        raw_session_type: None,
     }
 }
 
@@ -22,6 +23,7 @@ fn new_session_with_time(track: &str, offset_hours: i64) -> NewSession {
         car_name: "Porsche 911 GT3 R".to_string(),
         session_type: "practice".to_string(),
         started_at: time.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string(),
+        raw_session_type: None,
     }
 }
 
@@ -91,6 +93,7 @@ async fn test_list_1000_sessions_performance() {
             started_at: chrono::Utc::now()
                 .format("%Y-%m-%dT%H:%M:%S%.3fZ")
                 .to_string(),
+            raw_session_type: None,
         };
         db.insert_session(&session).await.unwrap();
     }

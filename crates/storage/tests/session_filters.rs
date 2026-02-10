@@ -6,6 +6,7 @@ fn new_session(track: &str, car: &str, started_at: &str) -> NewSession {
         car_name: car.to_string(),
         session_type: "practice".to_string(),
         started_at: started_at.to_string(),
+        raw_session_type: None,
     }
 }
 

@@ -38,6 +38,8 @@ struct PitwallSessionMeta {
     #[serde(default)]
     #[allow(dead_code)]
     status: Option<String>,
+    #[serde(default)]
+    raw_session_type: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -134,6 +136,7 @@ pub fn parse_pitwall_export(parquet_path: &Path) -> Result<ImportedSession, Stor
         ended_at: export_meta.session.ended_at,
         import_source: parquet_path.display().to_string(),
         import_format: "pitwall_export".to_string(),
+        raw_session_type: export_meta.session.raw_session_type,
     };
 
     Ok(ImportedSession {
