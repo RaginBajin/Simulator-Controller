@@ -52,7 +52,26 @@ impl IrsdkReader {
         }
 
         // Already have a handle, verify it's still valid by reading header
-        self.read_header().is_ok()
+        if self.read_header().is_ok() {
+            true
+        } else {
+            // Connection lost - cleanup handles to prevent leak
+            self.close();
+            false
+        }
+    }
+
+    /// Close the shared memory connection and cleanup handles
+    #[cfg(target_os = "windows")]
+    fn close(&mut self) {
+        unsafe {
+            if let Some(mapped_view) = self.mapped_view.take() {
+                UnmapViewOfFile(mapped_view).ok();
+            }
+            if let Some(handle) = self.handle.take() {
+                CloseHandle(handle).ok();
+            }
+        }
     }
 
     /// Check if connected to IRSDK shared memory (stub for non-Windows)

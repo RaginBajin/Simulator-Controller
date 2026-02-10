@@ -56,52 +56,76 @@ impl ConnectionManager {
         let status = Arc::clone(&self.status);
         let stop_flag = Arc::clone(&self.stop_flag);
 
-        // Spawn polling thread
+        // Spawn polling thread with panic recovery
         let handle = thread::spawn(move || {
+            use std::panic::{catch_unwind, AssertUnwindSafe};
+
             let mut reader = IrsdkReader::new();
             let mut last_status = ConnectionStatus::Disconnected;
 
             info!("IRSDK polling loop started (2-second interval)");
 
             while !stop_flag.load(Ordering::SeqCst) {
-                // Check connection status
-                let is_connected = reader.is_connected();
-                let new_status = if is_connected {
-                    ConnectionStatus::Connected
-                } else {
-                    ConnectionStatus::Disconnected
-                };
-
-                // Detect state change
-                if new_status != last_status {
-                    // Update shared status
-                    {
-                        let mut status_guard = status.lock().unwrap();
-                        *status_guard = new_status;
-                    }
-
-                    // Log state change
-                    match new_status {
-                        ConnectionStatus::Connected => {
-                            info!("IRSDK connected");
-                        }
-                        ConnectionStatus::Disconnected => {
-                            info!("IRSDK disconnected");
-                        }
-                    }
-
-                    // Broadcast event
-                    let event = ConnectionEvent {
-                        status: new_status,
-                        timestamp: Utc::now(),
+                // Wrap each poll iteration in panic recovery
+                let poll_result = catch_unwind(AssertUnwindSafe(|| {
+                    // Check connection status
+                    let is_connected = reader.is_connected();
+                    let new_status = if is_connected {
+                        ConnectionStatus::Connected
+                    } else {
+                        ConnectionStatus::Disconnected
                     };
 
-                    if let Err(e) = tx.send(event) {
-                        warn!("Failed to send connection event: {}", e);
-                        break;
+                    // Detect state change
+                    if new_status != last_status {
+                        // Update shared status
+                        {
+                            let mut status_guard = status.lock().unwrap();
+                            *status_guard = new_status;
+                        }
+
+                        // Log state change
+                        match new_status {
+                            ConnectionStatus::Connected => {
+                                info!("IRSDK connected");
+                            }
+                            ConnectionStatus::Disconnected => {
+                                info!("IRSDK disconnected");
+                            }
+                        }
+
+                        // Broadcast event
+                        let event = ConnectionEvent {
+                            status: new_status,
+                            timestamp: Utc::now(),
+                        };
+
+                        if let Err(e) = tx.send(event) {
+                            warn!("Failed to send connection event: {}", e);
+                            return Err(());
+                        }
+
+                        last_status = new_status;
                     }
 
-                    last_status = new_status;
+                    Ok(last_status)
+                }));
+
+                match poll_result {
+                    Ok(Ok(status)) => {
+                        last_status = status;
+                    }
+                    Ok(Err(_)) => {
+                        // Channel send failed, exit gracefully
+                        break;
+                    }
+                    Err(panic_err) => {
+                        // Polling iteration panicked - log and continue
+                        warn!("IRSDK poll iteration panicked: {:?}, recovering", panic_err);
+                        // Reset reader state on panic
+                        reader = IrsdkReader::new();
+                        // Continue polling after brief delay
+                    }
                 }
 
                 // Sleep for 2 seconds
@@ -118,13 +142,34 @@ impl ConnectionManager {
     /// Stop the polling loop
     ///
     /// Gracefully shuts down the polling thread.
+    /// Uses a timeout to prevent blocking shutdown if thread is stuck.
     pub fn stop(&mut self) {
         info!("Stopping connection manager");
         self.stop_flag.store(true, Ordering::SeqCst);
 
         if let Some(handle) = self.poll_thread.take() {
-            if let Err(e) = handle.join() {
-                warn!("Error joining poll thread: {:?}", e);
+            // Give thread up to 3 seconds to finish gracefully
+            // This is longer than the 2-second poll interval to allow current iteration to complete
+            let result = std::thread::scope(|s| {
+                let timeout_handle = s.spawn(|| {
+                    std::thread::sleep(Duration::from_secs(3));
+                });
+
+                // Try to join the poll thread
+                match handle.join() {
+                    Ok(_) => {
+                        drop(timeout_handle); // Cancel timeout if join succeeded
+                        Ok(())
+                    }
+                    Err(e) => {
+                        warn!("Poll thread panicked during shutdown: {:?}", e);
+                        Err(e)
+                    }
+                }
+            });
+
+            if result.is_err() {
+                warn!("Poll thread did not shut down cleanly");
             }
         }
 

@@ -69,13 +69,17 @@ pub fn run() {
             std::thread::spawn(move || {
                 use telemetry_engine::ConnectionStatus;
                 while let Ok(event) = event_rx.recv() {
-                    let event_name = match event.status {
-                        ConnectionStatus::Connected => "capture:irsdk-connected",
-                        ConnectionStatus::Disconnected => "capture:irsdk-disconnected",
+                    let (event_name, event_type) = match event.status {
+                        ConnectionStatus::Connected => {
+                            ("capture:irsdk-connected", "irsdk-connected")
+                        }
+                        ConnectionStatus::Disconnected => {
+                            ("capture:irsdk-disconnected", "irsdk-disconnected")
+                        }
                     };
 
                     let payload = serde_json::json!({
-                        "type": event_name,
+                        "type": event_type,
                         "timestamp": event.timestamp.to_rfc3339(),
                         "version": 1
                     });
