@@ -3,8 +3,6 @@
 //! Manages session state transitions (idle → recording → processing → completed),
 //! emits state change events, and coordinates with storage for persistence.
 
-use crate::capture_error::{GapMarker as CaptureGapMarker, GapReason as CaptureGapReason};
-use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 use storage::types::NewSession;
 
@@ -219,6 +217,7 @@ mod tests {
             started_at: chrono::Utc::now()
                 .format("%Y-%m-%dT%H:%M:%S%.3fZ")
                 .to_string(),
+            raw_session_type: None,
         }
     }
 

@@ -128,6 +128,7 @@ mod tests {
             car_name: "Test Car".to_string(),
             session_type: "practice".to_string(),
             started_at: chrono::Utc::now().to_rfc3339(),
+            raw_session_type: None,
         };
         let session = db.insert_session(&new_session).await.unwrap();
 

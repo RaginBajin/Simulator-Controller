@@ -17,6 +17,7 @@ async fn create_test_session(db: &Database, session_id: &str) {
         car_name: "Porsche 911 GT3 R".to_string(),
         session_type: "practice".to_string(),
         started_at: "2024-01-15T10:00:00Z".to_string(),
+        raw_session_type: None,
     };
 
     // Manually insert with specific ID for testing
