@@ -32,10 +32,10 @@ development_status:
   # Epic 3: Zero-Config Telemetry Capture Engine
   epic-3: in-progress
   3-1-irsdk-connection-auto-detection: done
-  3-2-telemetry-channel-capture: in-progress
+  3-2-telemetry-channel-capture: done
   3-3-session-lifecycle-management: in-progress
   3-3b-manual-debrief-trigger: ready-for-dev
-  3-4-capture-error-handling-recovery: in-progress
+  3-4-capture-error-handling-recovery: review
   3-5-background-capture-monitoring: ready-for-dev
   3-6-derived-metrics-engine: in-progress
   3-7-session-type-capture: done
