@@ -21,6 +21,7 @@ fn new_session() -> NewSession {
         started_at: chrono::Utc::now()
             .format("%Y-%m-%dT%H:%M:%S%.3fZ")
             .to_string(),
+        raw_session_type: None,
     }
 }
 

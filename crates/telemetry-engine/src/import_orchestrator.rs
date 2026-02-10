@@ -85,6 +85,7 @@ pub async fn import_session(
             best_lap_time_ms,
             &imported.metadata.import_source,
             &imported.metadata.import_format,
+            imported.metadata.raw_session_type.as_deref(),
         )
         .await?;
 

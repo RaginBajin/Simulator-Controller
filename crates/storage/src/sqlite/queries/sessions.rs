@@ -11,14 +11,15 @@ pub async fn insert_session(pool: &SqlitePool, new: &NewSession) -> Result<Sessi
         .to_string();
 
     sqlx::query(
-        "INSERT INTO sessions (id, track_name, car_name, session_type, started_at, status, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, 'active', $6, $6)"
+        "INSERT INTO sessions (id, track_name, car_name, session_type, started_at, status, raw_session_type, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, 'active', $6, $7, $7)"
     )
     .bind(&id)
     .bind(&new.track_name)
     .bind(&new.car_name)
     .bind(&new.session_type)
     .bind(&new.started_at)
+    .bind(&new.raw_session_type)
     .bind(&now)
     .execute(pool)
     .await?;
@@ -70,6 +71,11 @@ pub async fn list_sessions(
         bind_idx += 1;
         sql.push_str(&format!(" AND started_at <= ${}", bind_idx));
         binds.push(date_end.clone());
+    }
+    if let Some(session_type) = &filters.session_type {
+        bind_idx += 1;
+        sql.push_str(&format!(" AND session_type = ${}", bind_idx));
+        binds.push(session_type.clone());
     }
 
     bind_idx += 1;
@@ -336,14 +342,15 @@ pub async fn insert_imported_session(
     best_lap_time_ms: Option<i64>,
     import_source: &str,
     import_format: &str,
+    raw_session_type: Option<&str>,
 ) -> Result<Session, StorageError> {
     let now = chrono::Utc::now()
         .format("%Y-%m-%dT%H:%M:%S%.3fZ")
         .to_string();
 
     sqlx::query(
-        "INSERT INTO sessions (id, track_name, car_name, session_type, started_at, ended_at, lap_count, best_lap_time_ms, status, import_source, import_format, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'completed', $9, $10, $11, $11)"
+        "INSERT INTO sessions (id, track_name, car_name, session_type, started_at, ended_at, lap_count, best_lap_time_ms, status, import_source, import_format, raw_session_type, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'completed', $9, $10, $11, $12, $12)"
     )
     .bind(id)
     .bind(track_name)
@@ -355,6 +362,7 @@ pub async fn insert_imported_session(
     .bind(best_lap_time_ms)
     .bind(import_source)
     .bind(import_format)
+    .bind(raw_session_type)
     .bind(&now)
     .execute(pool)
     .await?;
@@ -397,6 +405,11 @@ pub async fn get_session_stats(
         bind_idx += 1;
         sql.push_str(&format!(" AND started_at <= ${}", bind_idx));
         binds.push(date_end.clone());
+    }
+    if let Some(session_type) = &filters.session_type {
+        bind_idx += 1;
+        sql.push_str(&format!(" AND session_type = ${}", bind_idx));
+        binds.push(session_type.clone());
     }
 
     let mut query = sqlx::query_as::<_, (i64, Option<i64>, Option<String>)>(&sql);

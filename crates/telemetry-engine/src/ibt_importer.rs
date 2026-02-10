@@ -302,6 +302,7 @@ fn extract_metadata(
     let mut track_name = String::from("Unknown Track");
     let mut car_name = String::from("Unknown Car");
     let mut session_type = String::from("practice");
+    let mut raw_session_type: Option<String> = None;
     let mut date_str = None;
 
     for line in session_info.lines() {
@@ -319,15 +320,11 @@ fn extract_metadata(
                 car_name = val.trim().to_string();
             }
         } else if let Some(val) = trimmed.strip_prefix("SessionType: ") {
-            let st = val.trim().to_lowercase();
-            session_type = match st.as_str() {
-                "race" => "race".to_string(),
-                "qualify" | "qualifying" | "lone qualify" | "open qualify" => {
-                    "qualifying".to_string()
-                }
-                "warmup" | "warm up" => "warmup".to_string(),
-                _ => "practice".to_string(),
-            };
+            let raw_val = val.trim().to_string();
+            raw_session_type = Some(raw_val.clone());
+            // Use the SessionType mapping for normalization
+            let mapped_type = crate::SessionType::from_irsdk(&raw_val);
+            session_type = mapped_type.as_str().to_string();
         } else if date_str.is_none() {
             // Try to find date from WeekendInfo section
             if let Some(val) = trimmed.strip_prefix("SimSetupDate: ") {
@@ -368,6 +365,7 @@ fn extract_metadata(
         ended_at: None,
         import_source: file_path.display().to_string(),
         import_format: "ibt".to_string(),
+        raw_session_type,
     })
 }
 

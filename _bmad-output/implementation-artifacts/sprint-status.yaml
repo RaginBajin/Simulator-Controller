@@ -37,7 +37,7 @@ development_status:
   3-3b-manual-debrief-trigger: ready-for-dev
   3-4-capture-error-handling-recovery: done
   3-5-background-capture-monitoring: ready-for-dev
-  3-6-derived-metrics-engine: in-progress
+  3-6-derived-metrics-engine: done
   3-7-session-type-capture: done
   epic-3-retrospective: optional
 

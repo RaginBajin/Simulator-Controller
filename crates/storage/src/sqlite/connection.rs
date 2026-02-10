@@ -290,6 +290,7 @@ impl Database {
         best_lap_time_ms: Option<i64>,
         import_source: &str,
         import_format: &str,
+        raw_session_type: Option<&str>,
     ) -> Result<Session, StorageError> {
         crate::sqlite::queries::sessions::insert_imported_session(
             &self.pool,
@@ -303,6 +304,7 @@ impl Database {
             best_lap_time_ms,
             import_source,
             import_format,
+            raw_session_type,
         )
         .await
     }

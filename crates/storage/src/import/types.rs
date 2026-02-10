@@ -13,6 +13,7 @@ pub struct ImportedSessionMetadata {
     pub ended_at: Option<String>,
     pub import_source: String,
     pub import_format: String,
+    pub raw_session_type: Option<String>,
 }
 
 /// A fully parsed session ready for storage. Produced by format-specific parsers.
