@@ -22,6 +22,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tokio = { version = "1", features = ["time"] }
 arrow = { version = "57" }
+uuid = { version = "1", features = ["v4"] }
 storage = { path = "../crates/storage" }
 telemetry-engine = { path = "../crates/telemetry-engine" }
 ai-provider = { path = "../crates/ai-provider" }
