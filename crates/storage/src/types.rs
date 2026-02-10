@@ -24,6 +24,9 @@ pub struct Session {
     pub integrity_validated_at: Option<String>,
     pub import_source: Option<String>,
     pub import_format: Option<String>,
+    pub gap_count: i32,
+    pub total_gap_duration_ms: i64,
+    pub disconnected_at: Option<String>,
 }
 
 /// Input for creating a new session (excludes auto-generated fields).
@@ -147,6 +150,32 @@ pub struct DeleteResult {
 pub struct RestoreResult {
     pub session_id: String,
     pub restored_status: String,
+}
+
+/// Gap marker record from the database.
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+#[serde(rename_all = "camelCase")]
+pub struct GapMarker {
+    pub id: i64,
+    pub session_id: String,
+    pub start_time: i64,
+    pub end_time: i64,
+    pub duration_ms: i64,
+    pub reason: String,
+    pub lap_position: Option<f64>,
+    pub created_at: String,
+}
+
+/// Input for creating a new gap marker.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NewGapMarker {
+    pub session_id: String,
+    pub start_time: i64,
+    pub end_time: i64,
+    pub duration_ms: i64,
+    pub reason: String,
+    pub lap_position: Option<f64>,
 }
 
 /// Options for listing sessions with pagination.
