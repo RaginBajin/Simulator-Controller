@@ -277,6 +277,60 @@ async fn test_filter_returns_empty_for_no_match() {
 }
 
 #[tokio::test]
+async fn test_filter_by_session_type() {
+    let (db, _dir) = setup_db().await;
+
+    // Insert sessions with different types
+    let mut race_session = new_session("Spa", "Porsche 911", "2025-01-01T10:00:00.000Z");
+    race_session.session_type = "race".to_string();
+    db.insert_session(&race_session).await.unwrap();
+
+    let mut qualifying_session = new_session("Spa", "Porsche 911", "2025-01-02T10:00:00.000Z");
+    qualifying_session.session_type = "qualifying".to_string();
+    db.insert_session(&qualifying_session).await.unwrap();
+
+    let mut practice_session = new_session("Spa", "Porsche 911", "2025-01-03T10:00:00.000Z");
+    practice_session.session_type = "practice".to_string();
+    db.insert_session(&practice_session).await.unwrap();
+
+    // Filter by race
+    let filters = FilterOptions {
+        session_type: Some("race".to_string()),
+        ..Default::default()
+    };
+    let sessions = db
+        .list_sessions(ListOptions::default(), &filters)
+        .await
+        .unwrap();
+    assert_eq!(sessions.len(), 1);
+    assert_eq!(sessions[0].session_type, "race");
+
+    // Filter by qualifying
+    let filters = FilterOptions {
+        session_type: Some("qualifying".to_string()),
+        ..Default::default()
+    };
+    let sessions = db
+        .list_sessions(ListOptions::default(), &filters)
+        .await
+        .unwrap();
+    assert_eq!(sessions.len(), 1);
+    assert_eq!(sessions[0].session_type, "qualifying");
+
+    // Filter by practice
+    let filters = FilterOptions {
+        session_type: Some("practice".to_string()),
+        ..Default::default()
+    };
+    let sessions = db
+        .list_sessions(ListOptions::default(), &filters)
+        .await
+        .unwrap();
+    assert_eq!(sessions.len(), 1);
+    assert_eq!(sessions[0].session_type, "practice");
+}
+
+#[tokio::test]
 async fn test_distinct_excludes_deleted_sessions() {
     let (db, _dir) = setup_db().await;
 

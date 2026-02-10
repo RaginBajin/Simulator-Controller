@@ -94,7 +94,6 @@ impl SessionType {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

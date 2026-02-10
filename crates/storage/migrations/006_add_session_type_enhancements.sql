@@ -22,7 +22,7 @@ CREATE TABLE sessions_new (
     updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
     deleted_at TEXT,
     previous_status TEXT,
-    integrity_status TEXT CHECK (integrity_status IN ('pending', 'validated', 'corrupted')),
+    integrity_status TEXT DEFAULT 'not_validated' CHECK (integrity_status IN ('not_validated', 'valid', 'checksum_failed', 'range_violation', 'distance_anomaly')),
     integrity_details TEXT,
     integrity_validated_at TEXT,
     import_source TEXT,
