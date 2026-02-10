@@ -54,28 +54,36 @@ pub struct TrayStatusDetails {
 }
 
 // Session lifecycle events (Story 3.3)
+// NOTE: These event definitions are not yet integrated (pending Stories 3.1/3.2 merge).
+// They are marked with #[allow(dead_code)] to pass clippy checks until integration is complete.
 
 /// Emitted when a telemetry capture session starts.
 /// Payload: `SessionCaptureEvent { type, timestamp, version, sessionId }`
+#[allow(dead_code)]
 pub const SESSION_CAPTURE_STARTED: &str = "session:capture-started";
 
 /// Emitted when a telemetry capture session stops (normal end).
 /// Payload: `SessionCaptureEvent { type, timestamp, version, sessionId }`
+#[allow(dead_code)]
 pub const SESSION_CAPTURE_STOPPED: &str = "session:capture-stopped";
 
 /// Emitted when a lap is completed during a session.
 /// Payload: `LapCompletedEvent { type, timestamp, version, sessionId, lapNumber, lapTimeMs }`
+#[allow(dead_code)]
 pub const SESSION_LAP_COMPLETED: &str = "session:lap-completed";
 
 /// Emitted when session state changes in the state machine.
 /// Payload: `SessionStateChangedEvent { type, timestamp, version, state, sessionId? }`
+#[allow(dead_code)]
 pub const SESSION_STATE_CHANGED: &str = "session:state-changed";
 
 /// Emitted when IRSDK connection is lost (from Story 3.1).
 /// Payload: `IrsdkDisconnectedEvent { type, timestamp, version }`
+#[allow(dead_code)]
 pub const CAPTURE_IRSDK_DISCONNECTED: &str = "capture:irsdk-disconnected";
 
 /// Payload for session capture start/stop events.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionCaptureEvent {
@@ -91,6 +99,7 @@ pub struct SessionCaptureEvent {
 }
 
 /// Payload for lap completed events.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LapCompletedEvent {
@@ -110,6 +119,7 @@ pub struct LapCompletedEvent {
 }
 
 /// Payload for session state changed events.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionStateChangedEvent {

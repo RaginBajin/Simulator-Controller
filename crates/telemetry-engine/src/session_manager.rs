@@ -45,13 +45,9 @@ pub enum SessionState {
         started_at: SystemTime,
     },
     /// Session recording stopped, processing final data.
-    Processing {
-        session_id: String,
-    },
+    Processing { session_id: String },
     /// Session completed successfully with all data persisted.
-    Completed {
-        session_id: String,
-    },
+    Completed { session_id: String },
     /// Session ended prematurely due to disconnect/crash.
     Partial {
         session_id: String,
@@ -111,10 +107,7 @@ impl SessionManager {
 
                 Ok(session_id)
             }
-            _ => Err(format!(
-                "Cannot start session from state {:?}",
-                self.state
-            )),
+            _ => Err(format!("Cannot start session from state {:?}", self.state)),
         }
     }
 
@@ -178,10 +171,7 @@ impl SessionManager {
                 tracing::warn!(session_id = %id, "Session marked as partial");
                 Ok(id)
             }
-            _ => Err(format!(
-                "Cannot mark partial from state {:?}",
-                self.state
-            )),
+            _ => Err(format!("Cannot mark partial from state {:?}", self.state)),
         }
     }
 
@@ -196,10 +186,7 @@ impl SessionManager {
                 tracing::info!("Session manager reset to idle");
                 Ok(())
             }
-            _ => Err(format!(
-                "Cannot reset from state {:?}",
-                self.state
-            )),
+            _ => Err(format!("Cannot reset from state {:?}", self.state)),
         }
     }
 

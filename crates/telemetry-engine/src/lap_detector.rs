@@ -115,14 +115,22 @@ impl LapDetector {
 
     /// Detects incomplete laps based on sudden position jumps.
     ///
-    /// Returns true if a large jump (>0.3) in lap distance is detected,
+    /// Returns completion status if a large jump (>0.3) in lap distance is detected,
     /// indicating a spin, reset, or other interruption.
+    ///
+    /// Detects both forward jumps (teleport/reset) and backward jumps (track reset),
+    /// excluding normal lap boundary crossings (>0.9 to <0.1).
     pub fn detect_incomplete_lap(&self, lap_dist_pct: f64) -> Option<String> {
         if let Some(prev_dist) = self.prev_lap_dist_pct {
             // Detect forward jump >0.3 (not crossing start/finish line)
             let forward_jump = lap_dist_pct > prev_dist + 0.3;
 
-            if forward_jump {
+            // Detect backward jump >0.3 (excluding normal lap crossing)
+            // Normal crossing: prev > 0.9 and curr < 0.1 (diff ~0.9-1.0)
+            // Abnormal: prev < 0.9 and backward jump > 0.3
+            let backward_jump = lap_dist_pct < prev_dist - 0.3 && prev_dist < 0.9;
+
+            if forward_jump || backward_jump {
                 return Some("incomplete_reset".to_string());
             }
         }
@@ -249,6 +257,31 @@ mod tests {
         // Normal progression (no jump)
         let incomplete = detector.detect_incomplete_lap(0.4);
         assert!(incomplete.is_none());
+    }
+
+    #[test]
+    fn test_detect_incomplete_lap_backward_jump() {
+        let mut detector = LapDetector::new();
+
+        // Initialize at 0.8 (mid-lap)
+        detector.process_sample(0.8, 1, 10.0, -1.0, TEST_SESSION_ID);
+
+        // Large backward jump (>0.3) - indicates track reset
+        let incomplete = detector.detect_incomplete_lap(0.2);
+        assert!(incomplete.is_some());
+        assert_eq!(incomplete.unwrap(), "incomplete_reset");
+    }
+
+    #[test]
+    fn test_detect_incomplete_lap_normal_crossing_not_detected() {
+        let mut detector = LapDetector::new();
+
+        // Initialize at 0.95 (near finish line)
+        detector.process_sample(0.95, 1, 10.0, -1.0, TEST_SESSION_ID);
+
+        // Normal lap crossing (backward from 0.95 to 0.05) - should NOT be detected as incomplete
+        let incomplete = detector.detect_incomplete_lap(0.05);
+        assert!(incomplete.is_none()); // This is a normal lap boundary, not an incomplete lap
     }
 
     #[test]
