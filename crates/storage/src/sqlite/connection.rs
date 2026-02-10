@@ -327,6 +327,11 @@ impl Database {
         crate::validation::orchestrator::validate_unvalidated_sessions(&self.pool).await
     }
 
+    /// Expose pool for query functions that need direct pool access.
+    pub(crate) fn pool(&self) -> &SqlitePool {
+        &self.pool
+    }
+
     /// Expose pool for integration tests that need raw SQL access.
     #[cfg(feature = "test-utils")]
     pub fn pool_for_testing(&self) -> &SqlitePool {

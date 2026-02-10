@@ -46,4 +46,7 @@ pub enum StorageError {
 
     #[error("Session is already deleted: {0}")]
     AlreadyDeleted(String),
+
+    #[error("JSON serialization error: {0}")]
+    JsonSerialization(#[from] serde_json::Error),
 }
