@@ -105,6 +105,12 @@ impl From<StorageError> for AppError {
                 details: None,
                 retryable: false,
             },
+            StorageError::JsonSerialization(e) => AppError {
+                code: "JSON_SERIALIZATION_ERROR".to_string(),
+                message: "JSON serialization failed".to_string(),
+                details: Some(e.to_string()),
+                retryable: false,
+            },
         }
     }
 }
