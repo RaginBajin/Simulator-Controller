@@ -5,11 +5,13 @@ use arrow::array::{BooleanArray, Float64Array, Int32Array, Int64Array};
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::record_batch::RecordBatch;
 
-use storage::{Database, NewLap, NewSession};
-use storage::validation::{IntegrityReport, STATUS_VALID};
 use storage::validation::lap_time::validate_lap_times;
-use storage::validation::monotonicity::{compute_lap_sample_counts, has_excessive_violations, validate_lap_distance_monotonicity};
+use storage::validation::monotonicity::{
+    has_excessive_violations, validate_lap_distance_monotonicity,
+};
 use storage::validation::range_check::{has_excessive_range_violations, validate_channel_ranges};
+use storage::validation::{IntegrityReport, STATUS_VALID};
+use storage::{Database, NewLap, NewSession};
 
 fn new_session() -> NewSession {
     NewSession {
@@ -37,9 +39,9 @@ fn make_valid_telemetry_batch(schema: &arrow::datatypes::Schema, num_rows: usize
                             "throttle" | "brake" | "clutch" | "brake_bias" | "track_position" => t,
                             // Monotonically increasing lap distance
                             "lap_distance" => i as f64 * 50.0,
-                            "speed" => 60.0 + t * 40.0,         // 60-100 m/s
-                            "rpm" => 3000.0 + t * 5000.0,       // 3000-8000
-                            "steering" => (t - 0.5) * 2.0,      // -1.0 to 1.0
+                            "speed" => 60.0 + t * 40.0,    // 60-100 m/s
+                            "rpm" => 3000.0 + t * 5000.0,  // 3000-8000
+                            "steering" => (t - 0.5) * 2.0, // -1.0 to 1.0
                             "lat_g" | "long_g" => (t - 0.5) * 4.0, // -2 to 2
                             "tire_temp_lf" | "tire_temp_rf" | "tire_temp_lr" | "tire_temp_rr" => {
                                 80.0 + t * 20.0
@@ -123,7 +125,10 @@ fn test_validate_lap_times_all_valid() {
     ];
 
     let violations = validate_lap_times(&laps);
-    assert!(violations.is_empty(), "Expected no violations for valid lap times");
+    assert!(
+        violations.is_empty(),
+        "Expected no violations for valid lap times"
+    );
 }
 
 #[test]
@@ -173,7 +178,10 @@ fn test_monotonicity_clean_data() {
     );
 
     let violations = validate_lap_distance_monotonicity(&batch);
-    assert!(violations.is_empty(), "Monotonically increasing data should have no violations");
+    assert!(
+        violations.is_empty(),
+        "Monotonically increasing data should have no violations"
+    );
 }
 
 #[test]
@@ -187,7 +195,10 @@ fn test_monotonicity_with_lap_reset() {
     );
 
     let violations = validate_lap_distance_monotonicity(&batch);
-    assert!(violations.is_empty(), "Lap resets should not be counted as violations");
+    assert!(
+        violations.is_empty(),
+        "Lap resets should not be counted as violations"
+    );
 }
 
 #[test]
@@ -324,7 +335,10 @@ fn test_range_check_clean_data() {
     );
 
     let violations = validate_channel_ranges(&batch);
-    assert!(violations.is_empty(), "In-range data should have no violations");
+    assert!(
+        violations.is_empty(),
+        "In-range data should have no violations"
+    );
 }
 
 #[test]
@@ -337,8 +351,14 @@ fn test_range_check_out_of_range() {
     );
 
     let violations = validate_channel_ranges(&batch);
-    assert!(violations.contains_key("throttle"), "Should flag throttle out-of-range");
-    assert!(violations.contains_key("speed"), "Should flag speed out-of-range");
+    assert!(
+        violations.contains_key("throttle"),
+        "Should flag throttle out-of-range"
+    );
+    assert!(
+        violations.contains_key("speed"),
+        "Should flag speed out-of-range"
+    );
     assert_eq!(violations["throttle"].out_of_range_count, 1);
     assert_eq!(violations["speed"].out_of_range_count, 1);
 }
@@ -413,7 +433,10 @@ async fn test_validate_session_without_telemetry() {
 
     let report = db.validate_session_integrity(&session.id).await.unwrap();
     assert_eq!(report.status, STATUS_VALID);
-    assert!(report.checksum_valid.is_none(), "No telemetry means no checksum check");
+    assert!(
+        report.checksum_valid.is_none(),
+        "No telemetry means no checksum check"
+    );
     assert!(report.monotonicity_violations.is_empty());
     assert!(report.range_violations.is_empty());
     assert!(report.lap_time_violations.is_empty());
@@ -488,7 +511,12 @@ async fn test_validate_session_with_telemetry() {
     std::fs::create_dir_all(&telemetry_dir).unwrap();
 
     let _write_result = db
-        .write_telemetry(&session.id, &telemetry_dir, &telemetry_batch, HashMap::new())
+        .write_telemetry(
+            &session.id,
+            &telemetry_dir,
+            &telemetry_batch,
+            HashMap::new(),
+        )
         .await
         .unwrap();
 
@@ -532,7 +560,10 @@ async fn test_validate_unvalidated_sessions() {
     let count = db.validate_unvalidated_sessions().await.unwrap();
     // Sessions without telemetry_path won't be picked up by validate_unvalidated_sessions
     // since the query filters on telemetry_path IS NOT NULL
-    assert_eq!(count, 0, "Sessions without telemetry are excluded from batch validation");
+    assert_eq!(
+        count, 0,
+        "Sessions without telemetry are excluded from batch validation"
+    );
 }
 
 #[tokio::test]
@@ -547,9 +578,11 @@ async fn test_validate_session_not_found() {
 
 #[test]
 fn test_empty_batch_range_check() {
-    let schema = Arc::new(Schema::new(vec![
-        Field::new("throttle", DataType::Float64, false),
-    ]));
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "throttle",
+        DataType::Float64,
+        false,
+    )]));
     let batch = RecordBatch::try_new(
         schema,
         vec![Arc::new(Float64Array::from(Vec::<f64>::new()))],
@@ -557,14 +590,19 @@ fn test_empty_batch_range_check() {
     .unwrap();
 
     let violations = validate_channel_ranges(&batch);
-    assert!(violations.is_empty(), "Empty batch should have no violations");
+    assert!(
+        violations.is_empty(),
+        "Empty batch should have no violations"
+    );
 }
 
 #[test]
 fn test_empty_batch_monotonicity() {
-    let schema = Arc::new(Schema::new(vec![
-        Field::new("lap_distance", DataType::Float64, false),
-    ]));
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "lap_distance",
+        DataType::Float64,
+        false,
+    )]));
     let batch = RecordBatch::try_new(
         schema,
         vec![Arc::new(Float64Array::from(Vec::<f64>::new()))],
@@ -572,7 +610,10 @@ fn test_empty_batch_monotonicity() {
     .unwrap();
 
     let violations = validate_lap_distance_monotonicity(&batch);
-    assert!(violations.is_empty(), "Empty batch should have no violations");
+    assert!(
+        violations.is_empty(),
+        "Empty batch should have no violations"
+    );
 }
 
 #[test]

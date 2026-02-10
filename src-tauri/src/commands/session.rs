@@ -1,5 +1,8 @@
 use serde::Serialize;
-use storage::{DeleteResult, FilterOptions, IntegrityReport, ListOptions, RestoreResult, SessionDetail, SessionStats, SessionSummary};
+use storage::{
+    DeleteResult, FilterOptions, IntegrityReport, ListOptions, RestoreResult, SessionDetail,
+    SessionStats, SessionSummary,
+};
 use tauri::State;
 
 use crate::error::AppError;
@@ -43,7 +46,11 @@ pub struct FilterOptionsResponse {
 pub async fn get_filter_options(
     state: State<'_, AppState>,
 ) -> Result<FilterOptionsResponse, AppError> {
-    let tracks = state.db.get_distinct_tracks().await.map_err(AppError::from)?;
+    let tracks = state
+        .db
+        .get_distinct_tracks()
+        .await
+        .map_err(AppError::from)?;
     let cars = state.db.get_distinct_cars().await.map_err(AppError::from)?;
     Ok(FilterOptionsResponse { tracks, cars })
 }
@@ -98,11 +105,7 @@ pub async fn restore_session(
     id: String,
     state: State<'_, AppState>,
 ) -> Result<RestoreResult, AppError> {
-    state
-        .db
-        .restore_session(&id)
-        .await
-        .map_err(AppError::from)
+    state.db.restore_session(&id).await.map_err(AppError::from)
 }
 
 #[tauri::command]

@@ -89,11 +89,8 @@ pub async fn validate_session_integrity(
         STATUS_NOT_VALIDATED.to_string()
     } else if has_excessive_range_violations(&range_violations) {
         STATUS_RANGE_VIOLATION.to_string()
-    } else if has_excessive_violations(
-        &monotonicity_violations,
-        &lap_sample_counts,
-        total_samples,
-    ) {
+    } else if has_excessive_violations(&monotonicity_violations, &lap_sample_counts, total_samples)
+    {
         STATUS_DISTANCE_ANOMALY.to_string()
     } else {
         STATUS_VALID.to_string()

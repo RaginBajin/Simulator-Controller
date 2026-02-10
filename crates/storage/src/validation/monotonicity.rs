@@ -72,7 +72,8 @@ pub fn has_excessive_violations(
     }
 
     // Group violations by lap
-    let mut lap_violations: std::collections::HashMap<u32, usize> = std::collections::HashMap::new();
+    let mut lap_violations: std::collections::HashMap<u32, usize> =
+        std::collections::HashMap::new();
     for v in violations {
         *lap_violations.entry(v.lap_number).or_default() += 1;
     }

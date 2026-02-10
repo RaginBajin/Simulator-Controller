@@ -93,13 +93,11 @@ fn write_parquet_atomic(
         .build();
 
     // Write to temp file
-    let file = File::create(temp_path).map_err(|e| {
-        StorageError::ParquetWrite(format!("Failed to create temp file: {}", e))
-    })?;
+    let file = File::create(temp_path)
+        .map_err(|e| StorageError::ParquetWrite(format!("Failed to create temp file: {}", e)))?;
 
-    let mut writer =
-        ArrowWriter::try_new(file, Arc::clone(batch.schema_ref()), Some(props))
-            .map_err(|e| StorageError::ParquetWrite(format!("Failed to create ArrowWriter: {}", e)))?;
+    let mut writer = ArrowWriter::try_new(file, Arc::clone(batch.schema_ref()), Some(props))
+        .map_err(|e| StorageError::ParquetWrite(format!("Failed to create ArrowWriter: {}", e)))?;
 
     writer
         .write(batch)
@@ -113,9 +111,8 @@ fn write_parquet_atomic(
     let file = File::open(temp_path).map_err(|e| {
         StorageError::ParquetWrite(format!("Failed to open temp file for fsync: {}", e))
     })?;
-    file.sync_all().map_err(|e| {
-        StorageError::ParquetWrite(format!("Failed to fsync temp file: {}", e))
-    })?;
+    file.sync_all()
+        .map_err(|e| StorageError::ParquetWrite(format!("Failed to fsync temp file: {}", e)))?;
 
     // Atomic rename from temp to final
     fs::rename(temp_path, final_path)?;

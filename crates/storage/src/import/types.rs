@@ -26,17 +26,9 @@ pub struct ImportedSession {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum ImportResult {
-    Success {
-        session_id: String,
-        lap_count: i32,
-    },
-    Duplicate {
-        existing_session_id: String,
-    },
-    Failed {
-        error: String,
-        file_path: String,
-    },
+    Success { session_id: String, lap_count: i32 },
+    Duplicate { existing_session_id: String },
+    Failed { error: String, file_path: String },
 }
 
 /// Aggregate result of a batch import operation.

@@ -1,6 +1,7 @@
 use std::time::Instant;
 use storage::{
-    Database, DebriefUpdate, FilterOptions, ListOptions, NewAiDebrief, NewLap, NewSession, SessionUpdate,
+    Database, DebriefUpdate, FilterOptions, ListOptions, NewAiDebrief, NewLap, NewSession,
+    SessionUpdate,
 };
 
 fn new_session(track: &str) -> NewSession {
@@ -38,11 +39,23 @@ async fn test_list_sessions_sorted_newest_first() {
     let (db, _dir) = setup_db().await;
 
     // Insert sessions with different times (older first)
-    let _s1 = db.insert_session(&new_session_with_time("Spa", 3)).await.unwrap();
-    let _s2 = db.insert_session(&new_session_with_time("Monza", 2)).await.unwrap();
-    let _s3 = db.insert_session(&new_session_with_time("Silverstone", 1)).await.unwrap();
+    let _s1 = db
+        .insert_session(&new_session_with_time("Spa", 3))
+        .await
+        .unwrap();
+    let _s2 = db
+        .insert_session(&new_session_with_time("Monza", 2))
+        .await
+        .unwrap();
+    let _s3 = db
+        .insert_session(&new_session_with_time("Silverstone", 1))
+        .await
+        .unwrap();
 
-    let sessions = db.list_sessions(ListOptions::default(), &FilterOptions::default()).await.unwrap();
+    let sessions = db
+        .list_sessions(ListOptions::default(), &FilterOptions::default())
+        .await
+        .unwrap();
     assert_eq!(sessions.len(), 3);
     assert_eq!(sessions[0].track_name, "Silverstone"); // newest
     assert_eq!(sessions[1].track_name, "Monza");
@@ -58,7 +71,10 @@ async fn test_list_sessions_excludes_deleted() {
 
     db.soft_delete_session(&s1.id).await.unwrap();
 
-    let sessions = db.list_sessions(ListOptions::default(), &FilterOptions::default()).await.unwrap();
+    let sessions = db
+        .list_sessions(ListOptions::default(), &FilterOptions::default())
+        .await
+        .unwrap();
     assert_eq!(sessions.len(), 1);
     assert_eq!(sessions[0].track_name, "Monza");
 }
@@ -137,7 +153,10 @@ async fn test_get_session_detail_includes_laps_and_debrief() {
     assert_eq!(detail.session.id, session.id);
     assert_eq!(detail.laps.len(), 3);
     assert!(detail.debrief.is_some());
-    assert_eq!(detail.debrief.unwrap().coaching_text.unwrap(), "Great session!");
+    assert_eq!(
+        detail.debrief.unwrap().coaching_text.unwrap(),
+        "Great session!"
+    );
     assert!(!detail.has_telemetry); // No telemetry path set
 }
 

@@ -13,14 +13,14 @@ pub use types::*;
 // Re-export parquet API
 pub use parquet::{
     cleanup_orphaned_temps, compute_checksum, read_telemetry, read_telemetry_window,
-    telemetry_schema, validate_checksum, write_telemetry, TelemetryWriteResult,
-    SCHEMA_VERSION, TELEMETRY_CHANNELS,
+    telemetry_schema, validate_checksum, write_telemetry, TelemetryWriteResult, SCHEMA_VERSION,
+    TELEMETRY_CHANNELS,
 };
 
 // Re-export import types
 pub use import::{
-    BatchImportResult, ImportProgress, ImportResult, ImportedSession,
-    ImportedSessionMetadata, parse_pitwall_export,
+    parse_pitwall_export, BatchImportResult, ImportProgress, ImportResult, ImportedSession,
+    ImportedSessionMetadata,
 };
 
 // Re-export validation API

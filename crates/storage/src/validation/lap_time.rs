@@ -1,5 +1,5 @@
-use crate::types::LapSummary;
 use super::{LapTimeViolation, MAX_LAP_TIME_MS};
+use crate::types::LapSummary;
 
 /// Validate lap times: must be positive and under 10 minutes.
 pub fn validate_lap_times(laps: &[LapSummary]) -> Vec<LapTimeViolation> {

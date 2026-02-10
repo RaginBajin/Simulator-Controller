@@ -48,7 +48,10 @@ async fn test_session_persists_across_reopens() {
 
     // Reopen, verify data persists
     let db = Database::init(&db_path).await.unwrap();
-    let sessions = db.list_sessions(ListOptions::default(), &FilterOptions::default()).await.unwrap();
+    let sessions = db
+        .list_sessions(ListOptions::default(), &FilterOptions::default())
+        .await
+        .unwrap();
     assert_eq!(sessions.len(), 1);
     assert_eq!(sessions[0].id, session_id);
     assert_eq!(sessions[0].track_name, "Spa-Francorchamps");
@@ -205,6 +208,9 @@ async fn test_list_sessions_excludes_deleted() {
     .await
     .unwrap();
 
-    let sessions = db.list_sessions(ListOptions::default(), &FilterOptions::default()).await.unwrap();
+    let sessions = db
+        .list_sessions(ListOptions::default(), &FilterOptions::default())
+        .await
+        .unwrap();
     assert_eq!(sessions.len(), 0);
 }

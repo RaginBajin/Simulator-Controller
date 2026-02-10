@@ -14,18 +14,77 @@ pub fn channel_ranges() -> HashMap<&'static str, ChannelRange> {
     ranges.insert("brake", ChannelRange { min: 0.0, max: 1.0 });
     ranges.insert("throttle", ChannelRange { min: 0.0, max: 1.0 });
     ranges.insert("clutch", ChannelRange { min: 0.0, max: 1.0 });
-    ranges.insert("speed", ChannelRange { min: 0.0, max: 120.0 });
-    ranges.insert("steering", ChannelRange { min: -6.28, max: 6.28 });
-    ranges.insert("rpm", ChannelRange { min: 0.0, max: 20000.0 });
-    ranges.insert("lat_g", ChannelRange { min: -10.0, max: 10.0 });
-    ranges.insert("long_g", ChannelRange { min: -10.0, max: 10.0 });
+    ranges.insert(
+        "speed",
+        ChannelRange {
+            min: 0.0,
+            max: 120.0,
+        },
+    );
+    ranges.insert(
+        "steering",
+        ChannelRange {
+            min: -std::f64::consts::TAU,
+            max: std::f64::consts::TAU,
+        },
+    );
+    ranges.insert(
+        "rpm",
+        ChannelRange {
+            min: 0.0,
+            max: 20000.0,
+        },
+    );
+    ranges.insert(
+        "lat_g",
+        ChannelRange {
+            min: -10.0,
+            max: 10.0,
+        },
+    );
+    ranges.insert(
+        "long_g",
+        ChannelRange {
+            min: -10.0,
+            max: 10.0,
+        },
+    );
     ranges.insert("brake_bias", ChannelRange { min: 0.0, max: 1.0 });
     ranges.insert("track_position", ChannelRange { min: 0.0, max: 1.0 });
-    ranges.insert("fuel_level", ChannelRange { min: 0.0, max: 200.0 });
-    ranges.insert("oil_temp", ChannelRange { min: 0.0, max: 250.0 });
-    ranges.insert("water_temp", ChannelRange { min: 0.0, max: 250.0 });
-    for channel in ["tire_temp_lf", "tire_temp_rf", "tire_temp_lr", "tire_temp_rr"] {
-        ranges.insert(channel, ChannelRange { min: 0.0, max: 200.0 });
+    ranges.insert(
+        "fuel_level",
+        ChannelRange {
+            min: 0.0,
+            max: 200.0,
+        },
+    );
+    ranges.insert(
+        "oil_temp",
+        ChannelRange {
+            min: 0.0,
+            max: 250.0,
+        },
+    );
+    ranges.insert(
+        "water_temp",
+        ChannelRange {
+            min: 0.0,
+            max: 250.0,
+        },
+    );
+    for channel in [
+        "tire_temp_lf",
+        "tire_temp_rf",
+        "tire_temp_lr",
+        "tire_temp_rr",
+    ] {
+        ranges.insert(
+            channel,
+            ChannelRange {
+                min: 0.0,
+                max: 200.0,
+            },
+        );
     }
     for channel in [
         "tire_pressure_lf",
@@ -33,7 +92,13 @@ pub fn channel_ranges() -> HashMap<&'static str, ChannelRange> {
         "tire_pressure_lr",
         "tire_pressure_rr",
     ] {
-        ranges.insert(channel, ChannelRange { min: 50.0, max: 350.0 });
+        ranges.insert(
+            channel,
+            ChannelRange {
+                min: 50.0,
+                max: 350.0,
+            },
+        );
     }
     ranges
 }
@@ -72,7 +137,7 @@ pub fn validate_channel_ranges(data: &RecordBatch) -> HashMap<String, RangeViola
                     if v > max_seen {
                         max_seen = v;
                     }
-                    if v < -1 || v > 8 {
+                    if !(-1..=8).contains(&v) {
                         out_of_range += 1;
                     }
                 }

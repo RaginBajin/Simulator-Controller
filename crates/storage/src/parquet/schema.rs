@@ -44,9 +44,7 @@ pub const TELEMETRY_CHANNELS: &[&str] = &[
 
 /// Returns the canonical Arrow schema for telemetry data with all 35 channels.
 pub fn telemetry_schema() -> Schema {
-    let metadata = HashMap::from([
-        ("schema_version".to_string(), SCHEMA_VERSION.to_string()),
-    ]);
+    let metadata = HashMap::from([("schema_version".to_string(), SCHEMA_VERSION.to_string())]);
 
     Schema::new_with_metadata(
         vec![

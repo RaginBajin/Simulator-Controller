@@ -28,9 +28,12 @@ pub async fn insert_lap(pool: &SqlitePool, new: &NewLap) -> Result<LapSummary, S
     Ok(lap)
 }
 
-pub async fn get_laps_for_session(pool: &SqlitePool, session_id: &str) -> Result<Vec<LapSummary>, StorageError> {
+pub async fn get_laps_for_session(
+    pool: &SqlitePool,
+    session_id: &str,
+) -> Result<Vec<LapSummary>, StorageError> {
     let laps = sqlx::query_as::<_, LapSummary>(
-        "SELECT * FROM lap_summaries WHERE session_id = $1 ORDER BY lap_number ASC"
+        "SELECT * FROM lap_summaries WHERE session_id = $1 ORDER BY lap_number ASC",
     )
     .bind(session_id)
     .fetch_all(pool)

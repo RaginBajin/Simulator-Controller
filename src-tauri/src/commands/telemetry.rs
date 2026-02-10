@@ -29,20 +29,16 @@ pub async fn get_chart_data(
     state: State<'_, AppState>,
 ) -> Result<ChartDataResponse, AppError> {
     let batch = match (start_distance, end_distance) {
-        (Some(start), Some(end)) => {
-            state
-                .db
-                .read_telemetry_window(&session_id, start, end)
-                .await
-                .map_err(AppError::from)?
-        }
-        _ => {
-            state
-                .db
-                .read_telemetry(&session_id)
-                .await
-                .map_err(AppError::from)?
-        }
+        (Some(start), Some(end)) => state
+            .db
+            .read_telemetry_window(&session_id, start, end)
+            .await
+            .map_err(AppError::from)?,
+        _ => state
+            .db
+            .read_telemetry(&session_id)
+            .await
+            .map_err(AppError::from)?,
     };
 
     let response = batch_to_chart_response(&session_id, &batch);

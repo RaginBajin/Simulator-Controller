@@ -55,10 +55,7 @@ fn test_metadata() -> HashMap<String, String> {
         ("session_id".to_string(), "test-session-1".to_string()),
         ("track_name".to_string(), "Spa-Francorchamps".to_string()),
         ("car_name".to_string(), "McLaren 720S GT3".to_string()),
-        (
-            "started_at".to_string(),
-            "2026-02-07T12:00:00Z".to_string(),
-        ),
+        ("started_at".to_string(), "2026-02-07T12:00:00Z".to_string()),
         ("sample_rate_hz".to_string(), "60".to_string()),
         ("channel_count".to_string(), "35".to_string()),
     ])
@@ -70,8 +67,9 @@ async fn write_and_read_roundtrip() {
     let batch = create_test_batch(100);
     let metadata = test_metadata();
 
-    let result =
-        write_telemetry("test-session-1", dir.path(), &batch, metadata).await.unwrap();
+    let result = write_telemetry("test-session-1", dir.path(), &batch, metadata)
+        .await
+        .unwrap();
 
     assert_eq!(result.row_count, 100);
     assert!(result.path.exists());
@@ -90,8 +88,9 @@ async fn snappy_compression_reduces_size() {
     let batch = create_test_batch(1000);
     let metadata = test_metadata();
 
-    let result =
-        write_telemetry("compression-test", dir.path(), &batch, metadata).await.unwrap();
+    let result = write_telemetry("compression-test", dir.path(), &batch, metadata)
+        .await
+        .unwrap();
 
     // 1000 rows x 35 cols x 8 bytes avg = ~280KB raw. Snappy should compress.
     // Just verify the file is smaller than a naive estimate.
@@ -110,7 +109,9 @@ async fn checksum_validates_correctly() {
     let batch = create_test_batch(50);
     let metadata = test_metadata();
 
-    let result = write_telemetry("checksum-test", dir.path(), &batch, metadata).await.unwrap();
+    let result = write_telemetry("checksum-test", dir.path(), &batch, metadata)
+        .await
+        .unwrap();
 
     // Valid checksum
     assert!(validate_checksum(&result.path, &result.checksum).unwrap());
@@ -125,7 +126,9 @@ async fn corrupted_file_detected_by_checksum() {
     let batch = create_test_batch(50);
     let metadata = test_metadata();
 
-    let result = write_telemetry("corrupt-test", dir.path(), &batch, metadata).await.unwrap();
+    let result = write_telemetry("corrupt-test", dir.path(), &batch, metadata)
+        .await
+        .unwrap();
 
     // Corrupt the file by overwriting some bytes
     std::fs::write(&result.path, b"corrupted data").unwrap();
@@ -200,10 +203,13 @@ async fn windowed_read_returns_correct_range() {
     let batch = create_test_batch(1000); // lap_distance: 0..999
     let metadata = test_metadata();
 
-    let result = write_telemetry("window-test", dir.path(), &batch, metadata).await.unwrap();
+    let result = write_telemetry("window-test", dir.path(), &batch, metadata)
+        .await
+        .unwrap();
 
     // Read window: distance 100..200 (inclusive)
-    let windowed = read_telemetry_window(&result.path, 100.0, 200.0, Some(&result.checksum)).unwrap();
+    let windowed =
+        read_telemetry_window(&result.path, 100.0, 200.0, Some(&result.checksum)).unwrap();
 
     // Should have rows where 100 <= lap_distance <= 200 = 101 rows
     assert_eq!(windowed.num_rows(), 101);
@@ -227,7 +233,9 @@ async fn performance_large_session_read() {
     let batch = create_test_batch(216_000);
     let metadata = test_metadata();
 
-    let result = write_telemetry("perf-test", dir.path(), &batch, metadata).await.unwrap();
+    let result = write_telemetry("perf-test", dir.path(), &batch, metadata)
+        .await
+        .unwrap();
 
     let start = std::time::Instant::now();
     let read_batch = read_telemetry(&result.path, Some(&result.checksum)).unwrap();
@@ -242,7 +250,11 @@ async fn performance_large_session_read() {
         "Read took {}ms, expected <{}ms ({})",
         elapsed.as_millis(),
         max_ms,
-        if cfg!(debug_assertions) { "debug" } else { "release" }
+        if cfg!(debug_assertions) {
+            "debug"
+        } else {
+            "release"
+        }
     );
 }
 
@@ -252,7 +264,9 @@ async fn read_without_checksum_validation() {
     let batch = create_test_batch(50);
     let metadata = test_metadata();
 
-    let result = write_telemetry("no-checksum", dir.path(), &batch, metadata).await.unwrap();
+    let result = write_telemetry("no-checksum", dir.path(), &batch, metadata)
+        .await
+        .unwrap();
 
     // Read without checksum validation
     let read_batch = read_telemetry(&result.path, None).unwrap();
@@ -266,14 +280,26 @@ fn schema_has_correct_structure() {
 
     // Check a few key fields
     assert_eq!(schema.field(0).name(), "timestamp_ms");
-    assert_eq!(*schema.field(0).data_type(), arrow::datatypes::DataType::Int64);
+    assert_eq!(
+        *schema.field(0).data_type(),
+        arrow::datatypes::DataType::Int64
+    );
 
     assert_eq!(schema.field(9).name(), "gear");
-    assert_eq!(*schema.field(9).data_type(), arrow::datatypes::DataType::Int32);
+    assert_eq!(
+        *schema.field(9).data_type(),
+        arrow::datatypes::DataType::Int32
+    );
 
     assert_eq!(schema.field(32).name(), "abs_active");
-    assert_eq!(*schema.field(32).data_type(), arrow::datatypes::DataType::Boolean);
+    assert_eq!(
+        *schema.field(32).data_type(),
+        arrow::datatypes::DataType::Boolean
+    );
 
     assert_eq!(schema.field(34).name(), "track_position");
-    assert_eq!(*schema.field(34).data_type(), arrow::datatypes::DataType::Float64);
+    assert_eq!(
+        *schema.field(34).data_type(),
+        arrow::datatypes::DataType::Float64
+    );
 }

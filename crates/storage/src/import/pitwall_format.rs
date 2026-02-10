@@ -95,14 +95,13 @@ pub fn parse_pitwall_export(parquet_path: &Path) -> Result<ImportedSession, Stor
         ))
     })?;
 
-    let export_meta: PitwallExportMetadata =
-        serde_json::from_str(&json_content).map_err(|e| {
-            StorageError::ParseError(format!(
-                "Failed to parse metadata JSON {}: {}",
-                json_path.display(),
-                e
-            ))
-        })?;
+    let export_meta: PitwallExportMetadata = serde_json::from_str(&json_content).map_err(|e| {
+        StorageError::ParseError(format!(
+            "Failed to parse metadata JSON {}: {}",
+            json_path.display(),
+            e
+        ))
+    })?;
 
     // Validate schema version
     if export_meta.schema_version != SCHEMA_VERSION {

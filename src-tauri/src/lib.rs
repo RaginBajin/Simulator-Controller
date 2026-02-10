@@ -4,7 +4,7 @@ mod events;
 mod state;
 
 use tauri::Manager;
-use tracing::{info, warn, error};
+use tracing::{error, info, warn};
 use tracing_subscriber::EnvFilter;
 
 use state::AppState;
@@ -22,23 +22,22 @@ pub fn run() {
 
     tauri::Builder::default()
         .setup(|app| {
-            let app_data_dir = app
-                .path()
-                .app_data_dir()
-                .map_err(|e| {
-                    error!("Failed to resolve app_data_dir: {}", e);
-                    e
-                })?;
+            let app_data_dir = app.path().app_data_dir().map_err(|e| {
+                error!("Failed to resolve app_data_dir: {}", e);
+                e
+            })?;
 
             let db_path = app_data_dir.join("sessions.db");
 
-            let db = tauri::async_runtime::block_on(async {
-                Database::init(&db_path).await
-            })
-            .map_err(|e| {
-                error!("Failed to initialize database at {}: {}", db_path.display(), e);
-                e
-            })?;
+            let db = tauri::async_runtime::block_on(async { Database::init(&db_path).await })
+                .map_err(|e| {
+                    error!(
+                        "Failed to initialize database at {}: {}",
+                        db_path.display(),
+                        e
+                    );
+                    e
+                })?;
 
             // Clean up orphaned .parquet.tmp files from previous crashes
             let telemetry_dir = app_data_dir.join("telemetry");
@@ -92,12 +91,19 @@ pub fn run() {
 }
 
 async fn cleanup_expired_trash(state: &AppState, _data_dir: &std::path::Path) {
-    match state.db.find_expired_deleted_sessions(TRASH_MAX_AGE_DAYS).await {
+    match state
+        .db
+        .find_expired_deleted_sessions(TRASH_MAX_AGE_DAYS)
+        .await
+    {
         Ok(expired) => {
             if expired.is_empty() {
                 return;
             }
-            info!("Found {} expired deleted sessions to clean up", expired.len());
+            info!(
+                "Found {} expired deleted sessions to clean up",
+                expired.len()
+            );
             let mut cleaned = 0u32;
             for session in &expired {
                 // Remove Parquet file from .trash if it exists
@@ -113,11 +119,17 @@ async fn cleanup_expired_trash(state: &AppState, _data_dir: &std::path::Path) {
                 if let Err(e) = state.db.permanently_delete_session(&session.id).await {
                     error!("Failed to permanently delete session {}: {}", session.id, e);
                 } else {
-                    info!("Permanently deleted expired session: {} ({})", session.id, session.track_name);
+                    info!(
+                        "Permanently deleted expired session: {} ({})",
+                        session.id, session.track_name
+                    );
                     cleaned += 1;
                 }
             }
-            info!("Trash cleanup complete: permanently deleted {} sessions", cleaned);
+            info!(
+                "Trash cleanup complete: permanently deleted {} sessions",
+                cleaned
+            );
         }
         Err(e) => {
             error!("Trash cleanup failed: {}", e);

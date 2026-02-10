@@ -133,7 +133,11 @@ pub fn parse_ibt_file(path: &Path) -> Result<ImportedSession, StorageError> {
     info!(path = %path.display(), "Parsing .ibt file");
 
     let mut file = std::fs::File::open(path).map_err(|e| {
-        StorageError::ParseError(format!("Failed to open .ibt file {}: {}", path.display(), e))
+        StorageError::ParseError(format!(
+            "Failed to open .ibt file {}: {}",
+            path.display(),
+            e
+        ))
     })?;
 
     // Parse file header
@@ -153,11 +157,7 @@ pub fn parse_ibt_file(path: &Path) -> Result<ImportedSession, StorageError> {
     let var_headers = parse_var_headers(&mut file, &header)?;
 
     // Parse telemetry data records
-    let (telemetry_batch, raw_laps_data) = parse_data_records(
-        &mut file,
-        &header,
-        &var_headers,
-    )?;
+    let (telemetry_batch, raw_laps_data) = parse_data_records(&mut file, &header, &var_headers)?;
 
     // Extract lap boundaries and compute lap summaries
     let laps = compute_laps(&raw_laps_data);
@@ -179,25 +179,25 @@ pub fn parse_ibt_file(path: &Path) -> Result<ImportedSession, StorageError> {
 
 fn read_i32<R: Read>(reader: &mut R) -> Result<i32, StorageError> {
     let mut buf = [0u8; 4];
-    reader.read_exact(&mut buf).map_err(|e| {
-        StorageError::ParseError(format!("Failed to read i32: {}", e))
-    })?;
+    reader
+        .read_exact(&mut buf)
+        .map_err(|e| StorageError::ParseError(format!("Failed to read i32: {}", e)))?;
     Ok(i32::from_le_bytes(buf))
 }
 
 fn read_fixed_string<R: Read>(reader: &mut R, len: usize) -> Result<String, StorageError> {
     let mut buf = vec![0u8; len];
-    reader.read_exact(&mut buf).map_err(|e| {
-        StorageError::ParseError(format!("Failed to read string: {}", e))
-    })?;
+    reader
+        .read_exact(&mut buf)
+        .map_err(|e| StorageError::ParseError(format!("Failed to read string: {}", e)))?;
     let end = buf.iter().position(|&b| b == 0).unwrap_or(len);
     Ok(String::from_utf8_lossy(&buf[..end]).to_string())
 }
 
 fn parse_header<R: Read + Seek>(reader: &mut R) -> Result<IbtHeader, StorageError> {
-    reader.seek(SeekFrom::Start(0)).map_err(|e| {
-        StorageError::ParseError(format!("Failed to seek to header: {}", e))
-    })?;
+    reader
+        .seek(SeekFrom::Start(0))
+        .map_err(|e| StorageError::ParseError(format!("Failed to seek to header: {}", e)))?;
 
     let version = read_i32(reader)?;
     let _status = read_i32(reader)?;
@@ -220,9 +220,9 @@ fn parse_header<R: Read + Seek>(reader: &mut R) -> Result<IbtHeader, StorageErro
     // Skip padding to get to buffer offset
     // The buffer info array starts at offset 48 in the header
     // Each buffer entry is: tick_count (4) + buf_offset (4) = 8 bytes
-    reader.seek(SeekFrom::Start(48)).map_err(|e| {
-        StorageError::ParseError(format!("Failed to seek to buffer info: {}", e))
-    })?;
+    reader
+        .seek(SeekFrom::Start(48))
+        .map_err(|e| StorageError::ParseError(format!("Failed to seek to buffer info: {}", e)))?;
     let _tick_count = read_i32(reader)?;
     let buf_offset = read_i32(reader)?;
 
@@ -282,14 +282,12 @@ fn parse_session_info<R: Read + Seek>(
 ) -> Result<String, StorageError> {
     reader
         .seek(SeekFrom::Start(header.session_info_offset as u64))
-        .map_err(|e| {
-            StorageError::ParseError(format!("Failed to seek to session info: {}", e))
-        })?;
+        .map_err(|e| StorageError::ParseError(format!("Failed to seek to session info: {}", e)))?;
 
     let mut buf = vec![0u8; header.session_info_length as usize];
-    reader.read_exact(&mut buf).map_err(|e| {
-        StorageError::ParseError(format!("Failed to read session info: {}", e))
-    })?;
+    reader
+        .read_exact(&mut buf)
+        .map_err(|e| StorageError::ParseError(format!("Failed to read session info: {}", e)))?;
 
     let end = buf.iter().position(|&b| b == 0).unwrap_or(buf.len());
     Ok(String::from_utf8_lossy(&buf[..end]).to_string())
@@ -379,9 +377,7 @@ fn parse_var_headers<R: Read + Seek>(
 ) -> Result<Vec<IbtVarHeader>, StorageError> {
     reader
         .seek(SeekFrom::Start(header.var_header_offset as u64))
-        .map_err(|e| {
-            StorageError::ParseError(format!("Failed to seek to var headers: {}", e))
-        })?;
+        .map_err(|e| StorageError::ParseError(format!("Failed to seek to var headers: {}", e)))?;
 
     let mut var_headers = Vec::with_capacity(header.num_vars as usize);
 
@@ -449,9 +445,9 @@ fn parse_data_records<R: Read + Seek>(
     let lap_var = var_headers.iter().find(|vh| vh.name == "Lap");
 
     // Calculate number of data records
-    let file_size = reader.seek(SeekFrom::End(0)).map_err(|e| {
-        StorageError::ParseError(format!("Failed to get file size: {}", e))
-    })?;
+    let file_size = reader
+        .seek(SeekFrom::End(0))
+        .map_err(|e| StorageError::ParseError(format!("Failed to get file size: {}", e)))?;
 
     let data_start = header.buf_offset as u64;
     let record_len = header.buf_len as u64;
@@ -506,16 +502,13 @@ fn parse_data_records<R: Read + Seek>(
     };
     let sample_period_ms = 1000.0 / tick_rate;
 
-    reader.seek(SeekFrom::Start(data_start)).map_err(|e| {
-        StorageError::ParseError(format!("Failed to seek to data start: {}", e))
-    })?;
+    reader
+        .seek(SeekFrom::Start(data_start))
+        .map_err(|e| StorageError::ParseError(format!("Failed to seek to data start: {}", e)))?;
 
     for sample_idx in 0..num_records {
         reader.read_exact(&mut record_buf).map_err(|e| {
-            StorageError::ParseError(format!(
-                "Failed to read data record {}: {}",
-                sample_idx, e
-            ))
+            StorageError::ParseError(format!("Failed to read data record {}: {}", sample_idx, e))
         })?;
 
         // For each canonical channel in the schema, either read from .ibt or fill with default
@@ -588,9 +581,8 @@ fn parse_data_records<R: Read + Seek>(
         arrow_columns.push(col.build());
     }
 
-    let batch = RecordBatch::try_new(Arc::new(schema), arrow_columns).map_err(|e| {
-        StorageError::ParseError(format!("Failed to build RecordBatch: {}", e))
-    })?;
+    let batch = RecordBatch::try_new(Arc::new(schema), arrow_columns)
+        .map_err(|e| StorageError::ParseError(format!("Failed to build RecordBatch: {}", e)))?;
 
     let raw_data = LapRawData {
         session_times,
@@ -822,9 +814,8 @@ pub fn create_test_ibt_file(path: &Path, num_samples: usize) -> Result<(), Stora
     let var_header_offset = session_info_offset + session_info_length;
     let data_offset = var_header_offset + (num_vars * VAR_HEADER_SIZE as i32);
 
-    let mut file = std::fs::File::create(path).map_err(|e| {
-        StorageError::ParseError(format!("Failed to create test .ibt: {}", e))
-    })?;
+    let mut file = std::fs::File::create(path)
+        .map_err(|e| StorageError::ParseError(format!("Failed to create test .ibt: {}", e)))?;
 
     // Write header (112 bytes)
     let mut header_buf = vec![0u8; IBT_HEADER_SIZE];
@@ -854,14 +845,12 @@ pub fn create_test_ibt_file(path: &Path, num_samples: usize) -> Result<(), Stora
     // buf[52]: buf_offset
     header_buf[52..56].copy_from_slice(&data_offset.to_le_bytes());
 
-    file.write_all(&header_buf).map_err(|e| {
-        StorageError::ParseError(format!("Failed to write test header: {}", e))
-    })?;
+    file.write_all(&header_buf)
+        .map_err(|e| StorageError::ParseError(format!("Failed to write test header: {}", e)))?;
 
     // Write session info
-    file.write_all(session_info).map_err(|e| {
-        StorageError::ParseError(format!("Failed to write session info: {}", e))
-    })?;
+    file.write_all(session_info)
+        .map_err(|e| StorageError::ParseError(format!("Failed to write session info: {}", e)))?;
 
     // Write variable headers (144 bytes each)
     for (name, var_type, offset) in &test_vars {
@@ -879,9 +868,8 @@ pub fn create_test_ibt_file(path: &Path, num_samples: usize) -> Result<(), Stora
         // description (64 bytes starting at offset 48) - leave empty
         // unit (32 bytes starting at offset 112) - leave empty
 
-        file.write_all(&vh_buf).map_err(|e| {
-            StorageError::ParseError(format!("Failed to write var header: {}", e))
-        })?;
+        file.write_all(&vh_buf)
+            .map_err(|e| StorageError::ParseError(format!("Failed to write var header: {}", e)))?;
     }
 
     // Write data records
@@ -913,9 +901,8 @@ pub fn create_test_ibt_file(path: &Path, num_samples: usize) -> Result<(), Stora
         // SteeringWheelAngle (float, offset 40): 0.1 rad
         record[40..44].copy_from_slice(&0.1f32.to_le_bytes());
 
-        file.write_all(&record).map_err(|e| {
-            StorageError::ParseError(format!("Failed to write test record: {}", e))
-        })?;
+        file.write_all(&record)
+            .map_err(|e| StorageError::ParseError(format!("Failed to write test record: {}", e)))?;
     }
 
     Ok(())
@@ -1004,10 +991,7 @@ mod tests {
         let result = parse_ibt_file(&ibt_path).unwrap();
 
         // Should detect 1 complete lap (the crossing at 3600 samples)
-        assert!(
-            !result.laps.is_empty(),
-            "Should detect at least one lap"
-        );
+        assert!(!result.laps.is_empty(), "Should detect at least one lap");
 
         // First detected lap should have reasonable time (~60 seconds = 60000ms)
         if !result.laps.is_empty() {

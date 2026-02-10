@@ -19,15 +19,30 @@ async fn setup_db() -> (Database, tempfile::TempDir) {
 async fn seed_sessions(db: &Database) {
     // Insert diverse sessions for filter testing
     let sessions = vec![
-        ("Spa-Francorchamps", "Porsche 911 GT3 R", "2025-01-15T10:00:00.000Z"),
-        ("Spa-Francorchamps", "BMW M4 GT3", "2025-01-20T14:00:00.000Z"),
+        (
+            "Spa-Francorchamps",
+            "Porsche 911 GT3 R",
+            "2025-01-15T10:00:00.000Z",
+        ),
+        (
+            "Spa-Francorchamps",
+            "BMW M4 GT3",
+            "2025-01-20T14:00:00.000Z",
+        ),
         ("Monza", "Porsche 911 GT3 R", "2025-02-01T09:00:00.000Z"),
         ("Monza", "Ferrari 296 GT3", "2025-02-10T16:00:00.000Z"),
-        ("Silverstone", "Porsche 911 GT3 R", "2025-03-01T11:00:00.000Z"),
+        (
+            "Silverstone",
+            "Porsche 911 GT3 R",
+            "2025-03-01T11:00:00.000Z",
+        ),
     ];
 
     for (i, (track, car, started_at)) in sessions.iter().enumerate() {
-        let session = db.insert_session(&new_session(track, car, started_at)).await.unwrap();
+        let session = db
+            .insert_session(&new_session(track, car, started_at))
+            .await
+            .unwrap();
         // Give some sessions best lap times
         if i < 4 {
             db.update_session(
@@ -138,7 +153,10 @@ async fn test_pagination_with_filters() {
     // Get first page of 2
     let page1 = db
         .list_sessions(
-            ListOptions { limit: 2, offset: 0 },
+            ListOptions {
+                limit: 2,
+                offset: 0,
+            },
             &FilterOptions::default(),
         )
         .await
@@ -148,7 +166,10 @@ async fn test_pagination_with_filters() {
     // Get second page of 2
     let page2 = db
         .list_sessions(
-            ListOptions { limit: 2, offset: 2 },
+            ListOptions {
+                limit: 2,
+                offset: 2,
+            },
             &FilterOptions::default(),
         )
         .await
@@ -158,7 +179,10 @@ async fn test_pagination_with_filters() {
     // Get third page (only 1 left)
     let page3 = db
         .list_sessions(
-            ListOptions { limit: 2, offset: 4 },
+            ListOptions {
+                limit: 2,
+                offset: 4,
+            },
             &FilterOptions::default(),
         )
         .await
@@ -256,7 +280,11 @@ async fn test_distinct_excludes_deleted_sessions() {
     let (db, _dir) = setup_db().await;
 
     let s1 = db
-        .insert_session(&new_session("UniqueTrack", "UniqueCar", "2025-01-01T00:00:00.000Z"))
+        .insert_session(&new_session(
+            "UniqueTrack",
+            "UniqueCar",
+            "2025-01-01T00:00:00.000Z",
+        ))
         .await
         .unwrap();
 

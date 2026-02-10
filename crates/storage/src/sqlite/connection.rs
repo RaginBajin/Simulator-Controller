@@ -63,11 +63,19 @@ impl Database {
         crate::sqlite::queries::sessions::get_session(&self.pool, id).await
     }
 
-    pub async fn list_sessions(&self, opts: ListOptions, filters: &FilterOptions) -> Result<Vec<SessionSummary>, StorageError> {
+    pub async fn list_sessions(
+        &self,
+        opts: ListOptions,
+        filters: &FilterOptions,
+    ) -> Result<Vec<SessionSummary>, StorageError> {
         crate::sqlite::queries::sessions::list_sessions(&self.pool, opts, filters).await
     }
 
-    pub async fn update_session(&self, id: &str, update: SessionUpdate) -> Result<Session, StorageError> {
+    pub async fn update_session(
+        &self,
+        id: &str,
+        update: SessionUpdate,
+    ) -> Result<Session, StorageError> {
         crate::sqlite::queries::sessions::update_session(&self.pool, id, update).await
     }
 
@@ -77,7 +85,10 @@ impl Database {
         crate::sqlite::queries::laps::insert_lap(&self.pool, new).await
     }
 
-    pub async fn get_laps_for_session(&self, session_id: &str) -> Result<Vec<LapSummary>, StorageError> {
+    pub async fn get_laps_for_session(
+        &self,
+        session_id: &str,
+    ) -> Result<Vec<LapSummary>, StorageError> {
         crate::sqlite::queries::laps::get_laps_for_session(&self.pool, session_id).await
     }
 
@@ -125,9 +136,9 @@ impl Database {
             .await?
             .ok_or_else(|| StorageError::NotFound(session_id.to_string()))?;
 
-        let path_str = session
-            .telemetry_path
-            .ok_or_else(|| StorageError::NotFound(format!("No telemetry for session {}", session_id)))?;
+        let path_str = session.telemetry_path.ok_or_else(|| {
+            StorageError::NotFound(format!("No telemetry for session {}", session_id))
+        })?;
         let path = PathBuf::from(&path_str);
 
         parquet::read_telemetry(&path, session.telemetry_checksum.as_deref())
@@ -145,9 +156,9 @@ impl Database {
             .await?
             .ok_or_else(|| StorageError::NotFound(session_id.to_string()))?;
 
-        let path_str = session
-            .telemetry_path
-            .ok_or_else(|| StorageError::NotFound(format!("No telemetry for session {}", session_id)))?;
+        let path_str = session.telemetry_path.ok_or_else(|| {
+            StorageError::NotFound(format!("No telemetry for session {}", session_id))
+        })?;
         let path = PathBuf::from(&path_str);
 
         parquet::read_telemetry_window(
@@ -165,12 +176,12 @@ impl Database {
             .await?
             .ok_or_else(|| StorageError::NotFound(session_id.to_string()))?;
 
-        let path_str = session
-            .telemetry_path
-            .ok_or_else(|| StorageError::NotFound(format!("No telemetry for session {}", session_id)))?;
-        let checksum = session
-            .telemetry_checksum
-            .ok_or_else(|| StorageError::NotFound(format!("No checksum for session {}", session_id)))?;
+        let path_str = session.telemetry_path.ok_or_else(|| {
+            StorageError::NotFound(format!("No telemetry for session {}", session_id))
+        })?;
+        let checksum = session.telemetry_checksum.ok_or_else(|| {
+            StorageError::NotFound(format!("No checksum for session {}", session_id))
+        })?;
 
         parquet::validate_checksum(Path::new(&path_str), &checksum)
     }
@@ -199,7 +210,10 @@ impl Database {
         crate::sqlite::queries::sessions::get_distinct_cars(&self.pool).await
     }
 
-    pub async fn get_session_stats(&self, filters: &FilterOptions) -> Result<SessionStats, StorageError> {
+    pub async fn get_session_stats(
+        &self,
+        filters: &FilterOptions,
+    ) -> Result<SessionStats, StorageError> {
         crate::sqlite::queries::sessions::get_session_stats(&self.pool, filters).await
     }
 
@@ -215,18 +229,29 @@ impl Database {
         crate::sqlite::queries::ai_results::insert_debrief(&self.pool, new).await
     }
 
-    pub async fn get_debrief_for_session(&self, session_id: &str) -> Result<Option<AiDebrief>, StorageError> {
+    pub async fn get_debrief_for_session(
+        &self,
+        session_id: &str,
+    ) -> Result<Option<AiDebrief>, StorageError> {
         crate::sqlite::queries::ai_results::get_debrief_for_session(&self.pool, session_id).await
     }
 
-    pub async fn update_debrief(&self, id: &str, update: DebriefUpdate) -> Result<AiDebrief, StorageError> {
+    pub async fn update_debrief(
+        &self,
+        id: &str,
+        update: DebriefUpdate,
+    ) -> Result<AiDebrief, StorageError> {
         crate::sqlite::queries::ai_results::update_debrief(&self.pool, id, update).await
     }
 
     // -- Trash cleanup --
 
-    pub async fn find_expired_deleted_sessions(&self, max_age_days: u32) -> Result<Vec<Session>, StorageError> {
-        crate::sqlite::queries::sessions::find_expired_deleted_sessions(&self.pool, max_age_days).await
+    pub async fn find_expired_deleted_sessions(
+        &self,
+        max_age_days: u32,
+    ) -> Result<Vec<Session>, StorageError> {
+        crate::sqlite::queries::sessions::find_expired_deleted_sessions(&self.pool, max_age_days)
+            .await
     }
 
     pub async fn permanently_delete_session(&self, id: &str) -> Result<(), StorageError> {
@@ -252,6 +277,7 @@ impl Database {
         .await
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub async fn insert_imported_session(
         &self,
         id: &str,
