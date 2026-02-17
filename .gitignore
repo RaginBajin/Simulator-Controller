@@ -20,3 +20,8 @@ Binaries
 Releases
 .vscode
 Sources/SimHub-Plugin/obj/Release/
+
+# Node / Vite / Tauri
+node_modules/
+dist/
+target/

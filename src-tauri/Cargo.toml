@@ -1,0 +1,32 @@
+[package]
+name = "pitwall"
+version = "0.1.0"
+description = "Your AI Race Engineer - telemetry analysis and coaching for sim racers"
+authors = ["jbajin"]
+edition = "2021"
+
+[lib]
+name = "pitwall_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+chrono = { version = "0.4", features = ["serde"] }
+tauri-plugin-notification = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tokio = { version = "1", features = ["time"] }
+arrow = { version = "57" }
+uuid = { version = "1", features = ["v4"] }
+storage = { path = "../crates/storage" }
+telemetry-engine = { path = "../crates/telemetry-engine" }
+ai-provider = { path = "../crates/ai-provider" }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+
