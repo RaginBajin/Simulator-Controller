@@ -47,6 +47,19 @@ jobs:
       - name: Run TypeScript type check
         run: npm run typecheck
 
+      - name: Determine pre-release status
+        id: prerelease
+        shell: bash
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [[ "$TAG" == *-alpha* ]] || [[ "$TAG" == *-beta* ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "label=Pre-release" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "label=Release" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build and release
         uses: tauri-apps/tauri-action@v0.5.25
         env:
@@ -54,6 +67,9 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Pitwall ${{ github.ref_name }}'
-          releaseBody: 'See the changelog for details.'
+          releaseBody: |
+            ## Pitwall ${{ github.ref_name }} (${{ steps.prerelease.outputs.label }})
+
+            See the changelog for details.
           releaseDraft: false
-          prerelease: false
+          prerelease: ${{ steps.prerelease.outputs.is_prerelease == 'true' }}

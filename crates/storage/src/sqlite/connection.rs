@@ -258,6 +258,38 @@ impl Database {
         crate::sqlite::queries::sessions::permanently_delete_session(&self.pool, id).await
     }
 
+    // -- Gap marker operations --
+
+    pub async fn insert_gap_marker(&self, gap: &NewGapMarker) -> Result<i64, StorageError> {
+        crate::sqlite::queries::gap_markers::insert_gap_marker(&self.pool, gap).await
+    }
+
+    pub async fn get_gap_markers_for_session(
+        &self,
+        session_id: &str,
+    ) -> Result<Vec<GapMarker>, StorageError> {
+        crate::sqlite::queries::gap_markers::get_gap_markers_for_session(&self.pool, session_id)
+            .await
+    }
+
+    pub async fn update_session_gap_summary(&self, session_id: &str) -> Result<(), StorageError> {
+        crate::sqlite::queries::gap_markers::update_session_gap_summary(&self.pool, session_id)
+            .await
+    }
+
+    pub async fn mark_session_partial(
+        &self,
+        session_id: &str,
+        disconnected_at: &str,
+    ) -> Result<(), StorageError> {
+        crate::sqlite::queries::gap_markers::mark_session_partial(
+            &self.pool,
+            session_id,
+            disconnected_at,
+        )
+        .await
+    }
+
     // -- Import operations --
 
     pub async fn find_duplicate_session(
@@ -290,6 +322,7 @@ impl Database {
         best_lap_time_ms: Option<i64>,
         import_source: &str,
         import_format: &str,
+        raw_session_type: Option<&str>,
     ) -> Result<Session, StorageError> {
         crate::sqlite::queries::sessions::insert_imported_session(
             &self.pool,
@@ -303,6 +336,7 @@ impl Database {
             best_lap_time_ms,
             import_source,
             import_format,
+            raw_session_type,
         )
         .await
     }
@@ -325,6 +359,12 @@ impl Database {
     /// Find and validate all sessions that haven't been validated yet.
     pub async fn validate_unvalidated_sessions(&self) -> Result<u32, StorageError> {
         crate::validation::orchestrator::validate_unvalidated_sessions(&self.pool).await
+    }
+
+    /// Expose pool for query functions that need direct pool access.
+    #[allow(dead_code)]
+    pub(crate) fn pool(&self) -> &SqlitePool {
+        &self.pool
     }
 
     /// Expose pool for integration tests that need raw SQL access.

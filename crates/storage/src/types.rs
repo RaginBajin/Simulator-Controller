@@ -24,6 +24,10 @@ pub struct Session {
     pub integrity_validated_at: Option<String>,
     pub import_source: Option<String>,
     pub import_format: Option<String>,
+    pub raw_session_type: Option<String>,
+    pub gap_count: i32,
+    pub total_gap_duration_ms: i64,
+    pub disconnected_at: Option<String>,
 }
 
 /// Input for creating a new session (excludes auto-generated fields).
@@ -34,6 +38,7 @@ pub struct NewSession {
     pub car_name: String,
     pub session_type: String,
     pub started_at: String,
+    pub raw_session_type: Option<String>,
 }
 
 /// Partial update fields for an existing session.
@@ -108,6 +113,9 @@ pub struct AiDebrief {
     pub recommendations_json: Option<String>,
     pub provider_name: Option<String>,
     pub model_name: Option<String>,
+    pub trigger_type: Option<String>,
+    pub data_range_from_ms: Option<i64>,
+    pub data_range_to_ms: Option<i64>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -122,6 +130,9 @@ pub struct NewAiDebrief {
     pub recommendations_json: Option<String>,
     pub provider_name: Option<String>,
     pub model_name: Option<String>,
+    pub trigger_type: Option<String>,
+    pub data_range_from_ms: Option<i64>,
+    pub data_range_to_ms: Option<i64>,
 }
 
 /// Partial update fields for a debrief.
@@ -149,6 +160,32 @@ pub struct RestoreResult {
     pub restored_status: String,
 }
 
+/// Gap marker record from the database.
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+#[serde(rename_all = "camelCase")]
+pub struct GapMarker {
+    pub id: i64,
+    pub session_id: String,
+    pub start_time: i64,
+    pub end_time: i64,
+    pub duration_ms: i64,
+    pub reason: String,
+    pub lap_position: Option<f64>,
+    pub created_at: String,
+}
+
+/// Input for creating a new gap marker.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NewGapMarker {
+    pub session_id: String,
+    pub start_time: i64,
+    pub end_time: i64,
+    pub duration_ms: i64,
+    pub reason: String,
+    pub lap_position: Option<f64>,
+}
+
 /// Options for listing sessions with pagination.
 #[derive(Debug, Clone)]
 pub struct ListOptions {
@@ -173,6 +210,7 @@ pub struct FilterOptions {
     pub car: Option<String>,
     pub date_start: Option<String>,
     pub date_end: Option<String>,
+    pub session_type: Option<String>,
 }
 
 /// Aggregate statistics for the current filter set.

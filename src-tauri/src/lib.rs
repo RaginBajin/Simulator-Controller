@@ -1,9 +1,12 @@
+mod capture_events;
 mod commands;
 mod error;
 mod events;
+mod notifications;
 mod state;
+mod tray;
 
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 use tracing::{error, info, warn};
 use tracing_subscriber::EnvFilter;
 
@@ -21,6 +24,7 @@ pub fn run() {
         .init();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir().map_err(|e| {
                 error!("Failed to resolve app_data_dir: {}", e);
@@ -47,7 +51,47 @@ pub fn run() {
                 }
             }
 
-            app.manage(AppState::new(db, app_data_dir.clone()));
+            let app_state = AppState::new(db, app_data_dir.clone());
+            app.manage(app_state.clone());
+            app.manage(notifications::NotificationState::new());
+            app.manage(tray::TrayManager::new());
+
+            // Start IRSDK connection manager and spawn event listener
+            let event_rx = {
+                let mut manager = app_state.connection_manager.lock().map_err(|e| {
+                    error!("Failed to lock connection manager: {}", e);
+                    std::io::Error::other("Lock error")
+                })?;
+                manager.start()
+            };
+
+            // Spawn event listener thread to emit Tauri events
+            let app_handle = app.handle().clone();
+            std::thread::spawn(move || {
+                use telemetry_engine::ConnectionStatus;
+                while let Ok(event) = event_rx.recv() {
+                    let (event_name, event_type) = match event.status {
+                        ConnectionStatus::Connected => {
+                            ("capture:irsdk-connected", "irsdk-connected")
+                        }
+                        ConnectionStatus::Disconnected => {
+                            ("capture:irsdk-disconnected", "irsdk-disconnected")
+                        }
+                    };
+
+                    let payload = serde_json::json!({
+                        "type": event_type,
+                        "timestamp": event.timestamp.to_rfc3339(),
+                        "version": 1
+                    });
+
+                    if let Err(e) = app_handle.emit(event_name, payload) {
+                        error!("Failed to emit Tauri event {}: {}", event_name, e);
+                    } else {
+                        info!("Emitted Tauri event: {}", event_name);
+                    }
+                }
+            });
 
             // Run trash cleanup asynchronously (does not block startup)
             let cleanup_state = app.state::<AppState>().inner().clone();
@@ -71,9 +115,26 @@ pub fn run() {
                 }
             });
 
+            // Set up system tray icon (idle state)
+            tray::setup_tray(app.handle())?;
+
+            // Intercept window close to minimize to tray instead of quitting
+            if let Some(window) = app.get_webview_window("main") {
+                let win = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        api.prevent_close();
+                        if let Err(e) = win.hide() {
+                            warn!("Failed to hide window on close: {}", e);
+                        }
+                    }
+                });
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::capture::get_capture_status,
             commands::session::get_sessions,
             commands::session::get_session_data,
             commands::session::delete_session,
@@ -85,6 +146,10 @@ pub fn run() {
             commands::import::import_session,
             commands::import::import_session_batch,
             commands::import::get_supported_import_formats,
+            commands::capture::trigger_debrief,
+            notifications::notify_debrief_ready,
+            notifications::get_notification_status,
+            notifications::reset_notification_count,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
