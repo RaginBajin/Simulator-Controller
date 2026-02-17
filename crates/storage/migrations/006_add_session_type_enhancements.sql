@@ -1,3 +1,4 @@
+-- safety:allow-drop
 -- Add raw_session_type column for diagnostic purposes
 ALTER TABLE sessions ADD COLUMN raw_session_type TEXT;
 

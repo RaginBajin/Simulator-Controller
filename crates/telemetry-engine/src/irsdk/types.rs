@@ -66,7 +66,7 @@ pub struct VarBuf {
 
 /// IRSDK variable header
 #[repr(C)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct IrsdkVarHeader {
     /// Variable type (0=char, 1=bool, 2=int, 3=bitfield, 4=float, 5=double)
     pub var_type: i32,

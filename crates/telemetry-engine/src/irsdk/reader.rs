@@ -14,9 +14,6 @@ use windows::Win32::{
     },
 };
 
-#[cfg(target_os = "windows")]
-use std::ffi::c_void;
-
 /// IRSDK shared memory file name
 #[cfg(target_os = "windows")]
 const IRSDK_MEM_MAP_FILE_NAME: &str = "Local\\IRSDKMemMapFileName";

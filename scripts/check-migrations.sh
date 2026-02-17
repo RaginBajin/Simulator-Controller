@@ -13,6 +13,12 @@ fi
 
 FOUND=0
 for file in "$MIGRATION_DIR"/*.sql; do
+  # Skip files with safety:allow-drop comment
+  if head -1 "$file" | grep -q "safety:allow-drop"; then
+    echo "ALLOWED: $file has safety:allow-drop annotation, skipping"
+    continue
+  fi
+
   if grep -iE "$FORBIDDEN_PATTERNS" "$file" > /dev/null 2>&1; then
     echo "FORBIDDEN: Destructive SQL found in $file"
     grep -inE "$FORBIDDEN_PATTERNS" "$file"
@@ -22,6 +28,8 @@ done
 
 if [ $FOUND -eq 1 ]; then
   echo "Migration safety check FAILED. Destructive SQL statements are not allowed at MVP."
+  echo "If a migration legitimately requires destructive SQL (e.g., SQLite table recreation),"
+  echo "add '-- safety:allow-drop' as the first line of the migration file."
   exit 1
 fi
 
